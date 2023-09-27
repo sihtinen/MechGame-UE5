@@ -52,6 +52,7 @@ void AMech::OnPrePhysicsTick_Implementation(float DeltaTime)
 	DoSurfaceCheck();
 	UpdateRideHeightPID(DeltaTime);
 	UpdateForwardDirection(DeltaTime);
+	UpdateMovement(DeltaTime);
 }
 
 void AMech::OnPostPhysicsTick(float DeltaTime)
@@ -141,6 +142,19 @@ void AMech::UpdateForwardDirection(float DeltaTime)
 		ControlRotationYaw);
 }
 
+void AMech::UpdateMovement(float DeltaTime)
+{
+	FVector MovementForce = DashBoostForce;
+
+	if (PreventMovementSources.Num() == 0 && MoveInput.SquaredLength() > FLT_EPSILON)
+	{
+		FVector WorldInputVector = GetWorldInputVectorProjectedToSurface();
+		MovementForce += PhysicsDataAsset->MovementSpeed * WorldInputVector;
+	}
+
+	CollisionCapsule->AddForce(MovementForce, NAME_None, true);
+}
+
 FVector AMech::GetPivotWorldLocation()
 {
 	if (CollisionCapsule.IsValid() == false)
@@ -162,4 +176,28 @@ FVector AMech::GetControlDirection(FVector Direction, bool FlattenToHorizontalPl
 	}
 
 	return Result;
+}
+
+FVector AMech::GetWorldInputVectorProjectedToSurface()
+{
+	FVector WorldSpaceInput = MoveInput.X * FVector::RightVector + MoveInput.Y * FVector::ForwardVector;
+	FVector HorizontalControlDirection = WorldSpaceInput.Length() * GetControlDirection(WorldSpaceInput, true);
+	FVector Result = HorizontalControlDirection;
+
+	if (GroundHitResult.bBlockingHit)
+		Result = FVector::VectorPlaneProject(Result, GroundHitResult.Normal);
+
+	return Result;
+}
+
+void AMech::RegisterPreventMovementSource(int32 sourceID)
+{
+	if (PreventMovementSources.Contains(sourceID) == false)
+		PreventMovementSources.Add(sourceID);
+}
+
+void AMech::UnregisterPreventMovementSource(int32 sourceID)
+{
+	if (PreventMovementSources.Contains(sourceID))
+		PreventMovementSources.Remove(sourceID);
 }

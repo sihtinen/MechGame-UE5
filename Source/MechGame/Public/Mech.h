@@ -39,6 +39,9 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category="Mech Runtime Properties")
 	FHitResult GroundHitResult;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	FVector DashBoostForce;
+
 	FOnTickEvent OnPrePhysicsTickEvent;
 	FOnTickEvent OnPostPhysicsTickEvent;
 
@@ -55,6 +58,13 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetControlDirection(FVector Direction, bool FlattenToHorizontalPlane);
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetWorldInputVectorProjectedToSurface();
+
+	void RegisterPreventMovementSource(int32 sourceID);
+
+	void UnregisterPreventMovementSource(int32 sourceID);
 
 protected:
 
@@ -92,6 +102,8 @@ private:
 	FPIDState RideHeightPIDState;
 	FPIDState ForwardDirectionPIDState;
 
+	TSet<int32> PreventMovementSources;
+
 private:
 
 	void DoSurfaceCheck();
@@ -99,4 +111,6 @@ private:
 	void UpdateRideHeightPID(float DeltaTime);
 
 	void UpdateForwardDirection(float DeltaTime);
+
+	void UpdateMovement(float DeltaTime);
 };

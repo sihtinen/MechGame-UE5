@@ -16,6 +16,9 @@ class MECHGAME_API UMechPhysicsAsset : public UDataAsset
 	
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float MovementSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CollisionCapsuleRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

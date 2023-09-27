@@ -29,9 +29,11 @@ private:
 	TWeakObjectPtr<AMech> Mech;
 	bool bWasBoostInputActivePreviousFrame;
 	bool bDashActive;
-	bool bDashVelocityCancelPerformed;
+	bool bDashInitialized;
 	float DashPrepareTimer;
 	float DashBoostTimer;
+	FVector DashBoostDirection;
+	FBoostParameters DashBoostParams;
 
 private:
 	void OnBoostInputStarted();

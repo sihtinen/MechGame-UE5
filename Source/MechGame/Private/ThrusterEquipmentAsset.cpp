@@ -5,15 +5,18 @@
 
 FBoostParameters FBoostParameters::Lerp(FBoostParameters a, FBoostParameters b, float t)
 {
-	return FBoostParameters();
+	FBoostParameters Result;
+	Result.HorizontalForce = FMath::Lerp(a.HorizontalForce, b.HorizontalForce, t);
+	Result.VerticalForce = FMath::Lerp(a.VerticalForce, b.VerticalForce, t);
+	return Result;
 }
 
 FBoostParameters UThrusterEquipmentAsset::GetSustainedBoostParams(float inputAmount)
 {
-	return FBoostParameters::Lerp(SustainedBoostParams_Horizontal, SustainedBoostParams_Vertical, inputAmount);
+	return FBoostParameters::Lerp(SustainedBoostParams_Vertical, SustainedBoostParams_Horizontal, inputAmount);
 }
 
 FBoostParameters UThrusterEquipmentAsset::GetDashBoostParams(float inputAmount)
 {
-	return FBoostParameters::Lerp(DashBoostParams_Horizontal, DashBoostParams_Vertical, inputAmount);
+	return FBoostParameters::Lerp(DashBoostParams_Vertical, DashBoostParams_Horizontal, inputAmount);
 }

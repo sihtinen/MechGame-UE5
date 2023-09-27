@@ -62,7 +62,13 @@ void UMechThrusterComponent::OnBoostInputStarted()
 	DashPrepareTimer = 0;
 	DashBoostTimer = 0;
 	bDashActive = true;
-	bDashVelocityCancelPerformed = false;
+	bDashInitialized = false;
+
+	if (GEngine)
+	{
+		int32 MyID = GetUniqueID();
+		GEngine->AddOnScreenDebugMessage(MyID, ThrusterAsset->DashPrepareTime, FColor::Red, FString::Printf(TEXT("Dash Started")));
+	}
 }
 
 void UMechThrusterComponent::OnBoostInputCanceled()
@@ -75,31 +81,59 @@ void UMechThrusterComponent::UpdateDash(float DeltaTime)
 {
 	if (DashPrepareTimer < ThrusterAsset->DashPrepareTime)
 	{
+		Mech->RegisterPreventMovementSource(GetUniqueID());
 		DashPrepareTimer += DeltaTime;
 		return;
 	}
 
-	auto RootComponent = Cast<UPrimitiveComponent>(GetOwner()->GetRootComponent());
+	Mech->UnregisterPreventMovementSource(GetUniqueID());
 
-	if (bDashVelocityCancelPerformed == false)
+	auto RootComponent = Cast<UPrimitiveComponent>(Mech->GetRootComponent());
+
+	if (bDashInitialized == false)
 	{
-		bDashVelocityCancelPerformed = true;
+		bDashInitialized = true;
 
+		// perform vertical velocity cancel
 		FVector Velocity = RootComponent->GetComponentVelocity();
 		Velocity.Z *= (1.0f - ThrusterAsset->DashVerticalVelocityCancelAmount);
 		RootComponent->SetPhysicsLinearVelocity(Velocity, false, NAME_None);
+
+		// generate dash boost params
+		float InputAmount = FMath::Clamp(Mech->MoveInput.Length(), 0, 1);
+		DashBoostParams = ThrusterAsset->GetDashBoostParams(InputAmount);
+
+		// cache input world direction
+		if (InputAmount > FLT_EPSILON)
+			DashBoostDirection = Mech->GetWorldInputVectorProjectedToSurface();
+		else
+			DashBoostDirection = Mech->GetActorForwardVector();
 	}
 
-	float InputAmount = FMath::Clamp(Mech->MoveInput.Length(), 0, 1);
-	FBoostParameters DashBoostParams = ThrusterAsset->GetDashBoostParams(InputAmount);
-
 	float DashT = DashBoostTimer / ThrusterAsset->DashLength;
+	float CurveVal = ThrusterAsset->DashForceCurve.GetRichCurve()->Eval(DashT);
 
-	FVector ControlDirectionForward = Mech->GetControlDirection(FVector::ForwardVector, true);
-	FVector ControlDirectionRight = Mech->GetControlDirection(FVector::RightVector, true);
+	FVector DashBoostForce = CurveVal * DashBoostParams.HorizontalForce * DashBoostDirection;
+	DashBoostForce.Z += CurveVal * DashBoostParams.VerticalForce;
+	Mech->DashBoostForce = DashBoostForce;
+
+	if (GEngine)
+	{
+		int32 MyID = GetUniqueID();
+		GEngine->AddOnScreenDebugMessage(MyID, DeltaTime, FColor::Red, FString::Printf(TEXT("Dash Boost %s"), *DashBoostForce.ToString()));
+	}
 
 	DashBoostTimer += DeltaTime;
 
 	if (DashBoostTimer >= ThrusterAsset->DashLength)
+	{
 		bDashActive = false;
+		Mech->DashBoostForce = FVector::ZeroVector;
+
+		if (GEngine)
+		{
+			int32 MyID = GetUniqueID();
+			GEngine->AddOnScreenDebugMessage(MyID, 2.f, FColor::Red, FString::Printf(TEXT("Dash Boost End")));
+		}
+	}
 }
