@@ -21,7 +21,7 @@ class MECHGAME_API AMech : public APawn
 
 public:
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mech Base Settings")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
 	TObjectPtr<UMechPhysicsAsset> PhysicsDataAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
@@ -36,8 +36,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
 	FVector2f MoveInput;
 
-	UPROPERTY(BlueprintReadOnly, Category="Mech Runtime Properties")
+	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
 	FHitResult GroundHitResult;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	float SustainedBoostForceVertical;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	float SustainedBoostForceHorizontal;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
 	FVector DashBoostForce;
@@ -68,8 +74,10 @@ public:
 
 protected:
 
+	UPROPERTY()
 	TArray<AActor*> PhysicsTraceIgnoredActors;
 
+	UPROPERTY()
 	TWeakObjectPtr<UCapsuleComponent> CollisionCapsule;
 
 protected:
@@ -96,7 +104,10 @@ protected:
 
 private:
 
+	UPROPERTY()
 	TWeakObjectPtr<UTickEventComponent> PrePhysicsTickComponent;
+
+	UPROPERTY()
 	TWeakObjectPtr<UTickEventComponent> PostPhysicsTickComponent;
 
 	FPIDState RideHeightPIDState;
@@ -113,4 +124,6 @@ private:
 	void UpdateForwardDirection(float DeltaTime);
 
 	void UpdateMovement(float DeltaTime);
+
+	void UpdateDrag(float DeltaTime);
 };

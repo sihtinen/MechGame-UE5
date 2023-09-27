@@ -46,11 +46,15 @@ void UMechThrusterComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	if (Mech->bBoostInputActive)
 	{
-
+		float InputAmount = FMath::Clamp(Mech->MoveInput.Length(), 0, 1);
+		FBoostParameters SustainedBoostParams = ThrusterAsset->GetSustainedBoostParams(InputAmount);
+		Mech->SustainedBoostForceHorizontal = SustainedBoostParams.HorizontalForce;
+		Mech->SustainedBoostForceVertical = SustainedBoostParams.VerticalForce;
 	}
 	else
 	{
-
+		Mech->SustainedBoostForceHorizontal = 0.f;
+		Mech->SustainedBoostForceVertical = 0.f;
 	}
 }
 
@@ -63,6 +67,9 @@ void UMechThrusterComponent::OnBoostInputStarted()
 	DashBoostTimer = 0;
 	bDashActive = true;
 	bDashInitialized = false;
+
+	Mech->SustainedBoostForceHorizontal = 0.f;
+	Mech->SustainedBoostForceVertical = 0.f;
 
 	if (GEngine)
 	{

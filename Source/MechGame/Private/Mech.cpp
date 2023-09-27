@@ -50,6 +50,7 @@ void AMech::OnPrePhysicsTick_Implementation(float DeltaTime)
 		return;
 
 	DoSurfaceCheck();
+	UpdateDrag(DeltaTime);
 	UpdateRideHeightPID(DeltaTime);
 	UpdateForwardDirection(DeltaTime);
 	UpdateMovement(DeltaTime);
@@ -121,7 +122,11 @@ void AMech::UpdateRideHeightPID(float DeltaTime)
 
 	RideHeightPIDState = RideHeightPID->UpdateTick(RideHeightPIDState, DeltaTime, CurrentValue, TargetValue);
 
-	FVector Force = RideHeightPIDState.Output * UpDirection;
+	float FilteredPIDOutput = RideHeightPIDState.Output;
+	if (bBoostInputActive)
+		FilteredPIDOutput = FMath::Max(FilteredPIDOutput, 0);
+
+	FVector Force = FilteredPIDOutput * UpDirection;
 
 	CollisionCapsule->AddForce(Force, NAME_None, true);
 }
@@ -144,15 +149,37 @@ void AMech::UpdateForwardDirection(float DeltaTime)
 
 void AMech::UpdateMovement(float DeltaTime)
 {
-	FVector MovementForce = DashBoostForce;
+	FVector MovementForce = DashBoostForce + SustainedBoostForceVertical * FVector::UpVector;
 
 	if (PreventMovementSources.Num() == 0 && MoveInput.SquaredLength() > FLT_EPSILON)
 	{
+		bool IsGrounded = (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating);
+		float MovementSpeed = (IsGrounded ? PhysicsDataAsset->MovementSpeedGround : PhysicsDataAsset->MovementSpeedAir);
 		FVector WorldInputVector = GetWorldInputVectorProjectedToSurface();
-		MovementForce += PhysicsDataAsset->MovementSpeed * WorldInputVector;
+		MovementForce += MovementSpeed * WorldInputVector;
+		
+		FVector WorldInputVectorNormalized = WorldInputVector;
+		WorldInputVectorNormalized.Normalize();
+		MovementForce += SustainedBoostForceHorizontal * WorldInputVectorNormalized;
 	}
 
 	CollisionCapsule->AddForce(MovementForce, NAME_None, true);
+}
+
+void AMech::UpdateDrag(float DeltaTime)
+{
+	FVector Velocity = CollisionCapsule->GetComponentVelocity();
+
+	FVector UpVector = (GroundHitResult.bBlockingHit ? GroundHitResult.Normal : FVector::UpVector);
+	FVector VerticalVelocity = Velocity.ProjectOnToNormal(UpVector);
+	FVector HorizontalVelocity = Velocity - VerticalVelocity;
+
+	bool IsGrounded = (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating);
+	float Drag = (IsGrounded ? PhysicsDataAsset->HorizontalDragGround : PhysicsDataAsset->HorizontalDragAir);
+	FVector DragHorizontalVelocity = (1.0f - DeltaTime * Drag) * HorizontalVelocity;
+
+	FVector DragForce = DragHorizontalVelocity - HorizontalVelocity;
+	CollisionCapsule->AddForce(DragForce, NAME_None, true);
 }
 
 FVector AMech::GetPivotWorldLocation()
