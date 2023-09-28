@@ -9,6 +9,7 @@
 #include "Mech.generated.h"
 
 class UMechPhysicsAsset;
+class UMechLoadoutAsset;
 class UPIDAsset;
 class UCapsuleComponent;
 
@@ -21,6 +22,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
 	TObjectPtr<UMechPhysicsAsset> PhysicsDataAsset;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
+	TObjectPtr<UMechLoadoutAsset> LoadoutAsset;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
 	TObjectPtr<UPIDAsset> RideHeightPID;
@@ -100,6 +104,9 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnPostPhysicsTick_BP(float DeltaTime);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLoadoutAssetsLoadedToMemory();
+
 private:
 
 	UPROPERTY()
@@ -114,6 +121,8 @@ private:
 	TSet<int32> PreventMovementSources;
 
 private:
+
+	void StartLoadingLoadoutAssets();
 
 	void DoSurfaceCheck();
 

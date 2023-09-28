@@ -3,11 +3,14 @@
 
 #include "Mech.h"
 #include "MechPhysicsAsset.h"
+#include "MechLoadoutAsset.h"
+#include "MechEquipmentAsset.h"
 #include "PIDAsset.h"
 #include "PIDState.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "PhysicsUtils.h"
+#include "Engine/AssetManager.h"
 
 AMech::AMech()
 {
@@ -41,6 +44,20 @@ void AMech::BeginPlay()
 
 	PrePhysicsTickComponent->OnTickEvent.AddDynamic(this, &AMech::OnPrePhysicsTick);
 	PostPhysicsTickComponent->OnTickEvent.AddDynamic(this, &AMech::OnPostPhysicsTick);
+
+	if (LoadoutAsset)
+		StartLoadingLoadoutAssets();
+}
+
+void AMech::StartLoadingLoadoutAssets()
+{
+	TArray<FSoftObjectPath> LoadoutAssetSoftObjectPaths = LoadoutAsset->GetValidAssetSoftObjectPaths();
+
+	if (LoadoutAssetSoftObjectPaths.IsEmpty())
+		return;
+
+	FSimpleDelegate Delegate = FStreamableDelegate::CreateUObject(this, &AMech::OnLoadoutAssetsLoadedToMemory);
+	UAssetManager::GetStreamableManager().RequestAsyncLoad(LoadoutAssetSoftObjectPaths, Delegate);
 }
 
 void AMech::OnPrePhysicsTick(float DeltaTime)
