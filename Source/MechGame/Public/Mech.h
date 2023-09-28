@@ -4,15 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
-#include "Kismet/KismetSystemLibrary.h"
 #include "TickEventComponent.h"
-#include "Delegates/Delegate.h"
-#include "MechPhysicsAsset.h"
-#include "PIDAsset.h"
 #include "PIDState.h"
-#include "Components/CapsuleComponent.h"
-#include "PhysicsUtils.h"
 #include "Mech.generated.h"
+
+class UMechPhysicsAsset;
+class UPIDAsset;
+class UCapsuleComponent;
 
 UCLASS()
 class MECHGAME_API AMech : public APawn

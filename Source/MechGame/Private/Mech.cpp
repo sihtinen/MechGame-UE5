@@ -2,6 +2,12 @@
 
 
 #include "Mech.h"
+#include "MechPhysicsAsset.h"
+#include "PIDAsset.h"
+#include "PIDState.h"
+#include "Components/CapsuleComponent.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "PhysicsUtils.h"
 
 AMech::AMech()
 {

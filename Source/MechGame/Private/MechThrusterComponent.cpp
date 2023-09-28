@@ -2,6 +2,8 @@
 
 
 #include "MechThrusterComponent.h"
+#include "Mech.h"
+#include "ThrusterEquipmentAsset.h"
 
 UMechThrusterComponent::UMechThrusterComponent()
 {

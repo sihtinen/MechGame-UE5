@@ -2,6 +2,7 @@
 
 
 #include "PhysicsUtils.h"
+#include "PIDAsset.h"
 
 FPIDState PhysicsUtils::ApplyAngleTorquePID(
 	TObjectPtr<UPIDAsset> PIDAsset, 

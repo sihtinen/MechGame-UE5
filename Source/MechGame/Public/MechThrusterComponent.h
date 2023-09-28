@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "ThrusterEquipmentAsset.h"
-#include "Mech.h"
+#include "BoostParameters.h"
 #include "MechThrusterComponent.generated.h"
 
+class AMech;
+class UThrusterEquipmentAsset;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class MECHGAME_API UMechThrusterComponent : public UActorComponent

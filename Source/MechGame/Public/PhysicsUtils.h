@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PIDAsset.h"
 #include "PIDState.h"
+
+class UPIDAsset;
 
 class MECHGAME_API PhysicsUtils
 {
