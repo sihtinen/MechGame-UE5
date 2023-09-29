@@ -8,7 +8,7 @@
 
 class UMechEquipmentAsset;
 
-UCLASS()
+UCLASS(BlueprintType)
 class MECHGAME_API UMechLoadoutAsset : public UDataAsset
 {
 	GENERATED_BODY()
@@ -34,5 +34,5 @@ private:
 	TArray<FSoftObjectPath> AssetSoftObjectPaths;
 
 private:
-	void TryAddEquipmentAssetSoftObjectPath(TObjectPtr<UMechEquipmentAsset> Asset);
+	void TryAddEquipmentAssetSoftObjectPath(UMechEquipmentAsset* Asset);
 };

@@ -16,8 +16,32 @@ TArray<FSoftObjectPath> UMechLoadoutAsset::GetValidAssetSoftObjectPaths()
 	return AssetSoftObjectPaths;
 }
 
-void UMechLoadoutAsset::TryAddEquipmentAssetSoftObjectPath(TObjectPtr<UMechEquipmentAsset> Asset)
+void UMechLoadoutAsset::TryAddEquipmentAssetSoftObjectPath(UMechEquipmentAsset* Asset)
 {
-	if (Asset && Asset->Mesh && Asset->Mesh.IsValid())
-		AssetSoftObjectPaths.Add(Asset->Mesh.ToSoftObjectPath());
+	if (!Asset)
+	{
+		int32 ID = GetUniqueID();
+
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(ID, 15.f, FColor::Orange, TEXT("MechLoadoutAsset::GetValidAssetSoftObjectPaths(): Asset null!"), false);
+
+		UE_LOG(LogTemp, Warning, TEXT("MechLoadoutAsset::GetValidAssetSoftObjectPaths(): Asset null!"));
+
+		return;
+	}
+
+	if (Asset->Mesh.IsNull())
+	{
+		int32 ID = GetUniqueID();
+		FString AssetName = Asset->GetName();
+
+		if (GEngine)
+			GEngine->AddOnScreenDebugMessage(ID, 15.f, FColor::Orange, FString::Printf(TEXT("MechLoadoutAsset::GetValidAssetSoftObjectPaths(): Asset %s mesh is null!"), *AssetName), false);
+		
+		UE_LOG(LogTemp, Warning, TEXT("MechLoadoutAsset::GetValidAssetSoftObjectPaths(): Asset %s mesh is null!"), *AssetName);
+
+		return;
+	}
+
+	AssetSoftObjectPaths.Add(Asset->Mesh.ToSoftObjectPath());
 }

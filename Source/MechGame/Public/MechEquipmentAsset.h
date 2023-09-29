@@ -8,7 +8,7 @@
 
 class USkeletalMesh;
 
-UCLASS()
+UCLASS(BlueprintType)
 class MECHGAME_API UMechEquipmentAsset : public UDataAsset
 {
 	GENERATED_BODY()

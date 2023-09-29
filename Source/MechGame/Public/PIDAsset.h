@@ -7,7 +7,7 @@
 #include "PIDState.h"
 #include "PIDAsset.generated.h"
 
-UCLASS()
+UCLASS(BlueprintType)
 class MECHGAME_API UPIDAsset : public UDataAsset
 {
 	GENERATED_BODY()

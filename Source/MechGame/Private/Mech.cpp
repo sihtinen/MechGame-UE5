@@ -22,7 +22,7 @@ void AMech::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 
-	FTransform Transform = GetTransform();
+	FTransform Transform = FTransform();
 	bool UseManualAttachment = false;
 
 	PrePhysicsTickComponent = Cast<UTickEventComponent>(AddComponentByClass(UTickEventComponent::StaticClass(), UseManualAttachment, Transform, true));
