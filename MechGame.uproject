@@ -94,6 +94,10 @@
 		{
 			"Name": "RawInput",
 			"Enabled": true
+		},
+		{
+			"Name": "AsyncTickPhysics",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

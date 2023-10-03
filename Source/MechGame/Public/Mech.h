@@ -6,6 +6,8 @@
 #include "GameFramework/Pawn.h"
 #include "TickEventComponent.h"
 #include "PIDState.h"
+#include "PhysicsPublic.h"
+#include "AsyncTickPawn.h"
 #include "Mech.generated.h"
 
 class UMechPhysicsAsset;
@@ -14,7 +16,7 @@ class UPIDAsset;
 class UCapsuleComponent;
 
 UCLASS()
-class MECHGAME_API AMech : public APawn
+class MECHGAME_API AMech : public AAsyncTickPawn
 {
 	GENERATED_BODY()
 
@@ -50,19 +52,18 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
 	FVector DashBoostForce;
 
-	FOnTickEvent OnPrePhysicsTickEvent;
-	FOnTickEvent OnPostPhysicsTickEvent;
-
 public:
 
 	AMech();
 
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void NativeAsyncTick(float DeltaTime);
+
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION(BlueprintCallable)
-	FVector GetPivotWorldLocation();
+	FVector GetPivotWorldLocation(bool IsAsync = false);
 
 	UFUNCTION(BlueprintCallable)
 	FVector GetControlDirection(FVector Direction, bool FlattenToHorizontalPlane);
@@ -74,6 +75,7 @@ public:
 
 	void UnregisterPreventMovementSource(int32 sourceID);
 
+
 protected:
 
 	UPROPERTY()
@@ -84,36 +86,12 @@ protected:
 
 protected:
 
-	virtual void PreInitializeComponents() override;
-
 	virtual void BeginPlay() override;
-
-	UFUNCTION()
-	void OnPrePhysicsTick(float DeltaTime);
-
-	UFUNCTION()
-	void OnPostPhysicsTick(float DeltaTime);
-
-	virtual void OnPrePhysicsTick_Implementation(float DeltaTime);
-
-	virtual void OnPostPhysicsTick_Implementation(float DeltaTime);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPrePhysicsTick_BP(float DeltaTime);
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnPostPhysicsTick_BP(float DeltaTime);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void OnLoadoutAssetsLoadedToMemory();
 
 private:
-
-	UPROPERTY()
-	TWeakObjectPtr<UTickEventComponent> PrePhysicsTickComponent;
-
-	UPROPERTY()
-	TWeakObjectPtr<UTickEventComponent> PostPhysicsTickComponent;
 
 	FPIDState RideHeightPIDState;
 	FPIDState ForwardDirectionPIDState;
@@ -124,7 +102,7 @@ private:
 
 	void StartLoadingLoadoutAssets();
 
-	void DoSurfaceCheck();
+	void DoSurfaceCheck(bool IsAsync);
 
 	void UpdateRideHeightPID(float DeltaTime);
 

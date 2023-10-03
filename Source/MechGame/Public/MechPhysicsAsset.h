@@ -28,6 +28,12 @@ public:
 	float HorizontalDragAir;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float VerticalDragGround;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float VerticalDragAir;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CollisionCapsuleRadius;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

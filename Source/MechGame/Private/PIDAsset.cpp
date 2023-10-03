@@ -24,14 +24,14 @@ FPIDState UPIDAsset::UpdateTick(FPIDState State, float DeltaTime, float CurrentV
     {
         switch (DerivativeMeasurementType)
         {
-            default:
-            case FDerivativeMeasurementType::Velocity:
-                DerivativeMeasure = -_valueChangeRate;
-                break;
+        default:
+        case FDerivativeMeasurementType::Velocity:
+            DerivativeMeasure = -_valueChangeRate;
+            break;
 
-            case FDerivativeMeasurementType::ErrorChangeRate:
-                DerivativeMeasure = _errorChangeRate;
-                break;
+        case FDerivativeMeasurementType::ErrorChangeRate:
+            DerivativeMeasure = _errorChangeRate;
+            break;
         }
     }
     else
