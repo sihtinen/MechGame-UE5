@@ -16,4 +16,7 @@ class MECHGAME_API UMechEquipmentAsset : public UDataAsset
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSoftObjectPtr<USkeletalMesh> Mesh;
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	TSubclassOf<UAnimInstance> AnimBlueprint;
 };

@@ -140,7 +140,6 @@ void AMech::UpdateRideHeightPID(float DeltaTime)
 	FVector Force = FilteredPIDOutput * UpDirection;
 
 	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), Force, true, NAME_None);
-	//CollisionCapsule->AddForce(Force, NAME_None, true);
 }
 
 void AMech::UpdateForwardDirection(float DeltaTime)
@@ -156,15 +155,6 @@ void AMech::UpdateForwardDirection(float DeltaTime)
 	FVector Torque = ForwardDirectionPIDState.Output * RotateAxis;
 
 	UAsyncTickFunctions::ATP_AddTorque(CollisionCapsule.Get(), Torque / DeltaTime, true, NAME_None);
-
-	//ForwardDirectionPIDState = PhysicsUtils::ApplyAngleTorquePID(
-	//	ForwardDirectionPID,
-	//	CollisionCapsule.Get(),
-	//	ForwardDirectionPIDState,
-	//	RotateAxis,
-	//	DeltaTime,
-	//	CurrentYaw,
-	//	ControlRotationYaw);
 }
 
 void AMech::UpdateMovement(float DeltaTime)
@@ -184,7 +174,6 @@ void AMech::UpdateMovement(float DeltaTime)
 	}
 
 	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), MovementForce / DeltaTime, true, NAME_None);
-	//CollisionCapsule->AddForce(DeltaTime * MovementForce, NAME_None, true);
 }
 
 void AMech::UpdateDrag(float DeltaTime)
@@ -205,7 +194,6 @@ void AMech::UpdateDrag(float DeltaTime)
 	FVector DragForce = HorizontalDragForceVector + VerticalDragForceVector;
 
 	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), DragForce / DeltaTime, true, NAME_None);
-	//CollisionCapsule->AddForce(DragForce, NAME_None, true);
 }
 
 FVector AMech::GetPivotWorldLocation(bool IsAsync)
@@ -264,4 +252,12 @@ void AMech::UnregisterPreventMovementSource(int32 sourceID)
 {
 	if (PreventMovementSources.Contains(sourceID))
 		PreventMovementSources.Remove(sourceID);
+}
+
+void AMech::SetAnimationBlueprint(USkeletalMeshComponent* SkeletalMeshComponent, TSubclassOf<UAnimInstance> AnimBlueprint)
+{
+	if (SkeletalMeshComponent == nullptr || AnimBlueprint == nullptr || AnimBlueprint == NULL)
+		return;
+
+	SkeletalMeshComponent->SetAnimInstanceClass(AnimBlueprint);
 }

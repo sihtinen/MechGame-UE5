@@ -12,8 +12,10 @@
 
 class UMechPhysicsAsset;
 class UMechLoadoutAsset;
+class UMechEquipmentAsset;
 class UPIDAsset;
 class UCapsuleComponent;
+class UAnimBlueprint;
 
 UCLASS()
 class MECHGAME_API AMech : public AAsyncTickPawn
@@ -33,6 +35,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
 	TObjectPtr<UPIDAsset> ForwardDirectionPID;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
 	bool bBoostInputActive;
@@ -75,6 +78,8 @@ public:
 
 	void UnregisterPreventMovementSource(int32 sourceID);
 
+	UFUNCTION(BlueprintCallable)
+	void SetAnimationBlueprint(USkeletalMeshComponent* SkeletalMeshComponent, TSubclassOf<UAnimInstance> AnimBlueprint);
 
 protected:
 
