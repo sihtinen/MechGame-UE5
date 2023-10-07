@@ -47,6 +47,7 @@ void AMech::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 	DoSurfaceCheck(false);
+	UpdateBodyRotation(DeltaTime);
 
 	if (GEngine)
 	{
@@ -194,6 +195,42 @@ void AMech::UpdateDrag(float DeltaTime)
 	FVector DragForce = HorizontalDragForceVector + VerticalDragForceVector;
 
 	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), DragForce / DeltaTime, true, NAME_None);
+}
+
+void AMech::UpdateBodyRotation(float DeltaTime)
+{
+	//var _bodySettings = m_loadout.Dictionary[EquipmentSlotTypes.Body] as BodyEquipment;
+
+	FTransform MechTransform = GetTransform();
+	FVector MechRotationEuler = MechTransform.GetRotation().Euler();
+	FVector ControlRotationEuler = GetControlRotation().Euler();
+
+	float CurrentAngle = FMath::Fmod(MechRotationEuler.Z + BodyRotationAngle, 360);
+	float TargetControlAngle = FMath::Fmod(ControlRotationEuler.Z, 360);
+
+	float AngleDifference = FMath::FindDeltaAngleDegrees(CurrentAngle, TargetControlAngle);
+	float TargetRotationAngle = BodyRotationAngle + AngleDifference;
+
+	if (TargetRotationAngle > 180)
+		TargetRotationAngle -= 360;
+	else if (TargetRotationAngle < -180)
+		TargetRotationAngle += 360;
+
+	float MAX_ANGLE = 90.0f;
+
+	TargetRotationAngle = FMath::Clamp(TargetRotationAngle, -MAX_ANGLE, MAX_ANGLE);
+
+	float RotationVelocityZ = CollisionCapsule->GetPhysicsAngularVelocityInDegrees().Z;
+	BodyRotationAngle -= DeltaTime * RotationVelocityZ;
+
+	FMath::SpringDamperSmoothing(
+		BodyRotationAngle, 
+		BodyRotationAngle_ValueRate,
+		TargetRotationAngle - DeltaTime * RotationVelocityZ,
+		BodyRotationTargetValueRate,
+		DeltaTime,
+		BodyRotationSmoothingTime,
+		BodyRotationDampingRatio);
 }
 
 FVector AMech::GetPivotWorldLocation(bool IsAsync)

@@ -37,23 +37,35 @@ public:
 	TObjectPtr<UPIDAsset> ForwardDirectionPID;
 
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	UPROPERTY(BlueprintReadWrite, Category = "Mech Runtime Properties")
 	bool bBoostInputActive;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	UPROPERTY(BlueprintReadWrite, Category = "Mech Runtime Properties")
 	FVector2f MoveInput;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
 	FHitResult GroundHitResult;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
 	float SustainedBoostForceVertical;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
 	float SustainedBoostForceHorizontal;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Mech Runtime Properties")
+	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
 	FVector DashBoostForce;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mech Runtime Properties")
+	float BodyRotationAngle;
+
+	UPROPERTY(EditAnywhere, Category = "Mech Runtime Properties")
+	float BodyRotationTargetValueRate;
+
+	UPROPERTY(EditAnywhere, Category = "Mech Runtime Properties")
+	float BodyRotationSmoothingTime;
+
+	UPROPERTY(EditAnywhere, Category = "Mech Runtime Properties")
+	float BodyRotationDampingRatio;
 
 public:
 
@@ -106,6 +118,8 @@ private:
 
 	TSet<int32> PreventMovementSources;
 
+	float BodyRotationAngle_ValueRate;
+
 private:
 
 	void StartLoadingLoadoutAssets();
@@ -119,4 +133,6 @@ private:
 	void UpdateMovement(float DeltaTime);
 
 	void UpdateDrag(float DeltaTime);
+
+	void UpdateBodyRotation(float DeltaTime);
 };
