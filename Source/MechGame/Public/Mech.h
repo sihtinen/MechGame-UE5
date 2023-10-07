@@ -81,6 +81,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetAnimationBlueprint(USkeletalMeshComponent* SkeletalMeshComponent, TSubclassOf<UAnimInstance> AnimBlueprint);
 
+	UFUNCTION(BlueprintCallable)
+	bool IsGrounded();
+
 protected:
 
 	UPROPERTY()

@@ -261,3 +261,8 @@ void AMech::SetAnimationBlueprint(USkeletalMeshComponent* SkeletalMeshComponent,
 
 	SkeletalMeshComponent->SetAnimInstanceClass(AnimBlueprint);
 }
+
+bool AMech::IsGrounded()
+{
+	return (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating);
+}

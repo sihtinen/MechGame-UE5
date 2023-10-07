@@ -4,21 +4,44 @@
 #include "MechLoadoutAsset.h"
 #include "MechEquipmentAsset.h"
 
+UMechLoadoutAsset::UMechLoadoutAsset()
+{
+	int MaxIndex = (int)EEquipmentSlotType::MAX;
+
+	for (int i = 0; i < MaxIndex; i++)
+	{
+		EEquipmentSlotType SlotType = (EEquipmentSlotType)i;
+		Slots.Add(SlotType, TObjectPtr<UMechEquipmentAsset>());
+	}
+}
+
 TArray<FSoftObjectPath> UMechLoadoutAsset::GetValidAssetSoftObjectPaths()
 {
 	AssetSoftObjectPaths.Reset();
 
-	TryAddEquipmentAssetSoftObjectPath(HeadAsset);
-	TryAddEquipmentAssetSoftObjectPath(BodyAsset);
-	TryAddEquipmentAssetSoftObjectPath(ArmsAsset);
-	TryAddEquipmentAssetSoftObjectPath(LegsAsset);
+	int MaxIndex = (int)EEquipmentSlotType::MAX;
+
+	for (int i = 0; i < MaxIndex; i++)
+	{
+		EEquipmentSlotType SlotType = (EEquipmentSlotType)i;
+
+		if (Slots.Contains(SlotType) == false)
+			continue;
+
+		TObjectPtr<UMechEquipmentAsset> AssetPtr = Slots[SlotType];
+
+		if (AssetPtr.IsNull())
+			continue;
+
+		TryAddEquipmentAssetSoftObjectPath(AssetPtr);
+	}
 
 	return AssetSoftObjectPaths;
 }
 
 void UMechLoadoutAsset::TryAddEquipmentAssetSoftObjectPath(UMechEquipmentAsset* Asset)
 {
-	if (!Asset)
+	if (Asset == nullptr)
 	{
 		int32 ID = GetUniqueID();
 

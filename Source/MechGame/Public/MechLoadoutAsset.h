@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "MechDataStructures.h"
 #include "MechLoadoutAsset.generated.h"
 
 class UMechEquipmentAsset;
@@ -15,18 +16,11 @@ class MECHGAME_API UMechLoadoutAsset : public UDataAsset
 	
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UMechEquipmentAsset> HeadAsset;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UMechEquipmentAsset> BodyAsset;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UMechEquipmentAsset> ArmsAsset;
-
-	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TObjectPtr<UMechEquipmentAsset> LegsAsset;
+	TMap<EEquipmentSlotType, TObjectPtr<UMechEquipmentAsset>> Slots;
 
 public:
+	UMechLoadoutAsset();
+
 	TArray<FSoftObjectPath> GetValidAssetSoftObjectPaths();
 
 private:
