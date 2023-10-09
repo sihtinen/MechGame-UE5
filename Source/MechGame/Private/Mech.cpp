@@ -269,8 +269,9 @@ FVector AMech::GetControlDirection(FVector Direction, bool FlattenToHorizontalPl
 
 FVector AMech::GetWorldInputVectorProjectedToSurface()
 {
-	FVector WorldSpaceInput = MoveInput.X * FVector::RightVector + MoveInput.Y * FVector::ForwardVector;
-	FVector HorizontalControlDirection = WorldSpaceInput.Length() * GetControlDirection(WorldSpaceInput, true);
+	FVector MoveInputVector = FVector(MoveInput.X, MoveInput.Y, 0).GetClampedToSize(0.f, 1.f);
+	FVector WorldSpaceInput = MoveInputVector.X * FVector::RightVector + MoveInputVector.Y * FVector::ForwardVector;
+	FVector HorizontalControlDirection = MoveInputVector.Length() * GetControlDirection(WorldSpaceInput, true);
 	FVector Result = HorizontalControlDirection;
 
 	if (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating)
