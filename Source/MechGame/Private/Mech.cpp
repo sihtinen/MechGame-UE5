@@ -12,6 +12,7 @@
 #include "PhysicsUtils.h"
 #include "AsyncTickFunctions.h"
 #include "Engine/AssetManager.h"
+#include "MechWeaponComponent.h"
 
 AMech::AMech()
 {
@@ -27,8 +28,26 @@ void AMech::BeginPlay()
 	CollisionCapsule = Cast<UCapsuleComponent>(GetComponentByClass(UCapsuleComponent::StaticClass()));
 	CollisionCapsule->SetLinearDamping(0.0f);
 
+	CreateWeaponComponentForSlot(EEquipmentSlotType::LeftArm);
+	CreateWeaponComponentForSlot(EEquipmentSlotType::RightArm);
+	CreateWeaponComponentForSlot(EEquipmentSlotType::LeftShoulder);
+	CreateWeaponComponentForSlot(EEquipmentSlotType::RightShoulder);
+
 	if (LoadoutAsset)
 		StartLoadingLoadoutAssets();
+}
+
+void AMech::CreateWeaponComponentForSlot(EEquipmentSlotType SlotType)
+{
+	bool UseManualAttachment = false;
+
+	TWeakObjectPtr<UMechWeaponComponent> WeaponComponent = 
+		Cast<UMechWeaponComponent>(AddComponentByClass(UMechWeaponComponent::StaticClass(), UseManualAttachment, FTransform(), true));
+	
+	FinishAddComponent(WeaponComponent.Get(), UseManualAttachment, FTransform());
+	AddInstanceComponent(WeaponComponent.Get());
+
+	WeaponComponentMap.Add(SlotType, WeaponComponent);
 }
 
 void AMech::StartLoadingLoadoutAssets()
@@ -155,7 +174,7 @@ void AMech::UpdateForwardDirection(float DeltaTime)
 
 	FVector Torque = ForwardDirectionPIDState.Output * RotateAxis;
 
-	UAsyncTickFunctions::ATP_AddTorque(CollisionCapsule.Get(), Torque / DeltaTime, true, NAME_None);
+	UAsyncTickFunctions::ATP_AddTorque(CollisionCapsule.Get(), 60 * Torque, true, NAME_None);
 }
 
 void AMech::UpdateMovement(float DeltaTime)
@@ -174,7 +193,7 @@ void AMech::UpdateMovement(float DeltaTime)
 		MovementForce += SustainedBoostForceHorizontal * WorldInputVectorNormalized;
 	}
 
-	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), MovementForce / DeltaTime, true, NAME_None);
+	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), DeltaTime * MovementForce, true, NAME_None);
 }
 
 void AMech::UpdateDrag(float DeltaTime)
@@ -194,7 +213,7 @@ void AMech::UpdateDrag(float DeltaTime)
 	FVector VerticalDragForceVector = (VerticalVelocity.Length() * VerticalDrag) * -VerticalVelocity.GetSafeNormal();
 	FVector DragForce = HorizontalDragForceVector + VerticalDragForceVector;
 
-	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), DragForce / DeltaTime, true, NAME_None);
+	UAsyncTickFunctions::ATP_AddForce(CollisionCapsule.Get(), DeltaTime * DragForce, true, NAME_None);
 }
 
 void AMech::UpdateBodyRotation(float DeltaTime)
@@ -303,4 +322,24 @@ void AMech::SetAnimationBlueprint(USkeletalMeshComponent* SkeletalMeshComponent,
 bool AMech::IsGrounded()
 {
 	return (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating);
+}
+
+UMechWeaponComponent* AMech::GetWeaponComponent(EEquipmentSlotType SlotType)
+{
+	if (WeaponComponentMap.Contains(SlotType))
+	{
+		return WeaponComponentMap[SlotType].Get();
+	}
+
+	return nullptr;
+}
+
+void AMech::SetFixedFrameRate(uint8 FrameRateTarget)
+{
+	if (GEngine)
+	{
+		auto FrameRateRange = GEngine->SmoothedFrameRateRange;
+		FrameRateRange.SetUpperBoundValue(FrameRateTarget);
+		GEngine->SmoothedFrameRateRange = FrameRateRange;
+	}
 }

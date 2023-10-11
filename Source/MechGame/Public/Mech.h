@@ -8,6 +8,7 @@
 #include "PIDState.h"
 #include "PhysicsPublic.h"
 #include "AsyncTickPawn.h"
+#include "MechDataStructures.h"
 #include "Mech.generated.h"
 
 class UMechPhysicsAsset;
@@ -16,6 +17,7 @@ class UMechEquipmentAsset;
 class UPIDAsset;
 class UCapsuleComponent;
 class UAnimBlueprint;
+class UMechWeaponComponent;
 
 UCLASS()
 class MECHGAME_API AMech : public AAsyncTickPawn
@@ -96,6 +98,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsGrounded();
 
+	UFUNCTION(BlueprintCallable)
+	UMechWeaponComponent* GetWeaponComponent(EEquipmentSlotType SlotType);
+
+	UFUNCTION(BlueprintCallable)
+	void SetFixedFrameRate(uint8 FrameRateTarget);
+
 protected:
 
 	UPROPERTY()
@@ -113,14 +121,19 @@ protected:
 
 private:
 
+	float BodyRotationAngle_ValueRate;
+
 	FPIDState RideHeightPIDState;
 	FPIDState ForwardDirectionPIDState;
 
 	TSet<int32> PreventMovementSources;
 
-	float BodyRotationAngle_ValueRate;
+	UPROPERTY()
+	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechWeaponComponent>> WeaponComponentMap;
 
 private:
+
+	void CreateWeaponComponentForSlot(EEquipmentSlotType SlotType);
 
 	void StartLoadingLoadoutAssets();
 
