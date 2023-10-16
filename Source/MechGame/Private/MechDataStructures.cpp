@@ -2,3 +2,13 @@
 
 
 #include "MechDataStructures.h"
+
+FVector FTargetingOption::GetLocation()
+{
+	return FVector();
+}
+
+FVector FTargetingOption::GetVelocity()
+{
+	return FVector();
+}
