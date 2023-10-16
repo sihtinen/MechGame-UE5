@@ -98,6 +98,10 @@
 		{
 			"Name": "AsyncTickPhysics",
 			"Enabled": true
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

@@ -80,7 +80,7 @@ void AMech::NativeAsyncTick(float DeltaTime)
 {
 	Super::NativeAsyncTick(DeltaTime);
 
-	if (PhysicsDataAsset == false)
+	if (PhysicsDataAsset.IsNull())
 		return;
 
 	DoSurfaceCheck(true);
