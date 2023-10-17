@@ -21,8 +21,18 @@ void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	ValidContextTargetsArray.Reset();
-	ActiveTargetingOptions.Reset();
+	ValidTargetingOptions.Reset();
 
+	CalculateValidContextTargets();
+
+	// filter results further in Blueprint / other C++ code if needed
+	OnValidTargetingOptionsCollected.Broadcast();
+
+
+}
+
+void UMechTargetingComponent::CalculateValidContextTargets()
+{
 	auto GameInstance = UGameplayStatics::GetGameInstance(GetOwner());
 
 	if (GameInstance == nullptr)
@@ -37,11 +47,11 @@ void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 	uint32 SelfOwnerID = GetOwner()->GetUniqueID();
 
-	for (int32 i = ValidContextTargetsArray.Num(); i --> 0;)
+	for (int32 i = ValidContextTargetsArray.Num(); i-- > 0;)
 	{
 		auto Current = ValidContextTargetsArray[i];
 		auto CurrentComponent = Current.Get();
-		
+
 		uint32 ComponentOwnerID = CurrentComponent->GetOwner()->GetUniqueID();
 
 		if (ComponentOwnerID == SelfOwnerID)
@@ -53,6 +63,6 @@ void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 		auto NewTargetingOption = FTargetingOption();
 		NewTargetingOption.ContextTargetComponent = CurrentComponent;
 
-		ActiveTargetingOptions.Add(NewTargetingOption);
+		ValidTargetingOptions.Add(NewTargetingOption);
 	}
 }

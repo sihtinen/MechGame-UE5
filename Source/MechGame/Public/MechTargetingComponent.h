@@ -9,6 +9,8 @@
 
 class UContextTargetComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnValidTargetingOptionsCollected);
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class MECHGAME_API UMechTargetingComponent : public UActorComponent
 {
@@ -19,14 +21,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = EContextLayers))
 	int32 TargetContextLayerFlags = 0;
 
-	UPROPERTY(BlueprintReadOnly)
-	TArray<FTargetingOption> ActiveTargetingOptions;
+	UPROPERTY(BlueprintReadWrite)
+	TArray<FTargetingOption> ValidTargetingOptions;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnValidTargetingOptionsCollected OnValidTargetingOptionsCollected;
 
 public:
 
 	UMechTargetingComponent();
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+
 
 protected:
 
@@ -36,4 +43,8 @@ private:
 
 	UPROPERTY()
 	TArray<TWeakObjectPtr<UContextTargetComponent>> ValidContextTargetsArray;
+
+private:
+
+	void CalculateValidContextTargets();
 };

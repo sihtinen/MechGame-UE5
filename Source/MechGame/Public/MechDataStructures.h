@@ -43,7 +43,7 @@ struct FTargetingOption
 
 public:
 
-    UPROPERTY()
+    UPROPERTY(BlueprintReadOnly)
     TWeakObjectPtr<UContextTargetComponent> ContextTargetComponent;
 
     UPROPERTY(BlueprintReadWrite)
