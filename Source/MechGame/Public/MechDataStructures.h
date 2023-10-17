@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "MechDataStructures.generated.h"
 
+class UContextTargetComponent;
+
 UENUM(BlueprintType)
 enum class EEquipmentSlotType : uint8 {
 
@@ -40,11 +42,23 @@ struct FTargetingOption
     GENERATED_BODY()
 
 public:
+
+    UPROPERTY()
+    TWeakObjectPtr<UContextTargetComponent> ContextTargetComponent;
+
+    UPROPERTY(BlueprintReadWrite)
     float DotScore;
+
+    UPROPERTY(BlueprintReadWrite)
     float DistanceScore;
+
+    UPROPERTY(BlueprintReadWrite)
     float TotalScore;
 
 public:
+
+    FTargetingOption();
+
     FVector GetLocation();
     FVector GetVelocity();
 };

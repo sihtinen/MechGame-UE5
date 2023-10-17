@@ -17,6 +17,11 @@ public:
 	void RegisterContextTargetComponent(UContextTargetComponent* Component);
 	void UnregisterContextTargetComponent(UContextTargetComponent* Component);
 
+	void GetContextTargetsOnLayers(TArray<TWeakObjectPtr<UContextTargetComponent>>* ArrayToPopulate, const int32& QueryLayers);
+
+	UFUNCTION(BlueprintCallable)
+	static bool BitMaskIncludes(const int32& BitMask, const int32& Layer);
+
 private:
 	TArray<TWeakObjectPtr<UContextTargetComponent>> ActiveContextTargetComponents;
 };
