@@ -30,7 +30,7 @@ TArray<FSoftObjectPath> UMechLoadoutAsset::GetValidAssetSoftObjectPaths()
 
 		TObjectPtr<UMechEquipmentAsset> AssetPtr = Slots[SlotType];
 
-		if (AssetPtr.IsNull())
+		if (AssetPtr == false)
 			continue;
 
 		TryAddEquipmentAssetSoftObjectPath(AssetPtr);

@@ -6,6 +6,7 @@
 #include "MechDataStructures.generated.h"
 
 class UContextTargetComponent;
+class UProjectileAsset;
 
 UENUM(BlueprintType)
 enum class EEquipmentSlotType : uint8 {
@@ -87,3 +88,27 @@ enum class EContextLayers : uint8
     WeaponHazard = 1 << 7,
 };
 ENUM_CLASS_FLAGS(EContextLayers);
+
+USTRUCT(BlueprintType)
+struct FProjectileState
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(BlueprintReadOnly)
+    FVector Location;
+
+    UPROPERTY(BlueprintReadOnly)
+    FVector Direction;
+
+    UPROPERTY(BlueprintReadOnly)
+    FVector Velocity;
+
+    UPROPERTY(BlueprintReadOnly)
+    TWeakObjectPtr<AActor> OwnerActor;
+
+    UPROPERTY(BlueprintReadOnly)
+    TWeakObjectPtr<UProjectileAsset> ProjectileAsset;
+
+};
