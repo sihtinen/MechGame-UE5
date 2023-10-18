@@ -43,7 +43,10 @@ struct FTargetingOption
 
 public:
 
-    UPROPERTY(BlueprintReadOnly)
+    UPROPERTY(BlueprintReadWrite)
+    bool IsValid;
+
+    UPROPERTY(BlueprintReadWrite)
     TWeakObjectPtr<UContextTargetComponent> ContextTargetComponent;
 
     UPROPERTY(BlueprintReadWrite)
@@ -54,6 +57,9 @@ public:
 
     UPROPERTY(BlueprintReadWrite)
     float TotalScore;
+
+    UPROPERTY(BlueprintReadWrite)
+    float DistanceToTargetingComponent;
 
 public:
 

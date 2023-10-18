@@ -5,6 +5,7 @@
 
 FTargetingOption::FTargetingOption()
 {
+	IsValid = false;
 	DotScore = 0;
 	DistanceScore = 0;
 	TotalScore = 0;

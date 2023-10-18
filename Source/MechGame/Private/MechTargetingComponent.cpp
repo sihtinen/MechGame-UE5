@@ -4,7 +4,8 @@
 #include "ContextSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "ContextTargetComponent.h"
-#include "Logging/StructuredLog.h"
+#include "Math/NumericLimits.h"
+#include "Camera/CameraComponent.h"
 
 UMechTargetingComponent::UMechTargetingComponent()
 {
@@ -28,12 +29,19 @@ void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 	// filter results further in Blueprint / other C++ code if needed
 	OnValidTargetingOptionsCollected.Broadcast();
 
+	FilterTargetingOptions_LineOfSight();
 
+	ScoreTargetingOptions();
+
+	// all processing completed -> update UI / draw debug lines / other logic in BP or other C++ classes
+	OnTargetingOptionsProcessingCompleted.Broadcast();
 }
 
 void UMechTargetingComponent::CalculateValidContextTargets()
 {
-	auto GameInstance = UGameplayStatics::GetGameInstance(GetOwner());
+	AActor* OwnerActor = GetOwner();
+
+	auto GameInstance = UGameplayStatics::GetGameInstance(OwnerActor);
 
 	if (GameInstance == nullptr)
 		return;
@@ -45,24 +53,158 @@ void UMechTargetingComponent::CalculateValidContextTargets()
 
 	ContextSubsystem->GetContextTargetsOnLayers(&ValidContextTargetsArray, TargetContextLayerFlags);
 
-	uint32 SelfOwnerID = GetOwner()->GetUniqueID();
+	uint32 MyOwnerActorID = OwnerActor->GetUniqueID();
 
 	for (int32 i = ValidContextTargetsArray.Num(); i-- > 0;)
 	{
 		auto Current = ValidContextTargetsArray[i];
 		auto CurrentComponent = Current.Get();
 
-		uint32 ComponentOwnerID = CurrentComponent->GetOwner()->GetUniqueID();
+		uint32 ComponentOwnerActorID = CurrentComponent->GetOwner()->GetUniqueID();
 
-		if (ComponentOwnerID == SelfOwnerID)
+		if (ComponentOwnerActorID == MyOwnerActorID)
 		{
 			ValidContextTargetsArray.RemoveAt(i);
 			continue;
 		}
 
 		auto NewTargetingOption = FTargetingOption();
+		NewTargetingOption.IsValid = true;
 		NewTargetingOption.ContextTargetComponent = CurrentComponent;
 
 		ValidTargetingOptions.Add(NewTargetingOption);
 	}
+}
+
+void UMechTargetingComponent::FilterTargetingOptions_LineOfSight()
+{
+	AActor* OwnerActor = GetOwner();
+
+	FVector TraceStartLocation = OwnerActor->GetActorLocation();
+
+	int32 TargetsCount = ValidTargetingOptions.Num();
+
+	for (int32 i = TargetsCount; i --> 0;)
+	{
+		FTargetingOption Target = ValidTargetingOptions[i];
+		AActor* TargetActor = Target.ContextTargetComponent->GetOwner();
+
+		TraceIgnoredActors.Add(OwnerActor);
+		TraceIgnoredActors.Add(TargetActor);
+
+		FVector TraceEnd = TargetActor->GetActorLocation();
+		ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
+		bool TraceAgainstComplexGeo = false;
+		bool IgnoreSelf = true;
+		EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForOneFrame;
+
+		bool bTraceHitFound = UKismetSystemLibrary::LineTraceSingle(
+			this,
+			TraceStartLocation,
+			TraceEnd,
+			TraceChannel,
+			TraceAgainstComplexGeo,
+			TraceIgnoredActors,
+			DrawDebugType,
+			TraceHitResult,
+			IgnoreSelf);
+
+		TraceIgnoredActors.Reset();
+
+		if (bTraceHitFound)
+		{
+			ValidTargetingOptions.RemoveAt(i);
+		}
+	}
+}
+
+void UMechTargetingComponent::ScoreTargetingOptions()
+{
+	float MinDistance = TNumericLimits<float>::Max();
+	float MaxDistance = 0.0f;
+
+	FVector EvaluationSourceLocation = GetScoreEvaluationSourceLocation();
+	FVector EvaluationForwardDirection = GetScoreEvaluationForwardDirection();
+
+	int32 TargetsCount = ValidTargetingOptions.Num();
+
+	FRichCurve* DotScoreCurve_Rich = DotScoreCurve.GetRichCurve();
+	FRichCurve* DistanceScoreCurve_Rich = DistanceScoreCurve.GetRichCurve();
+
+	for (int32 i = 0; i < TargetsCount; i++)
+	{
+		FTargetingOption* Target = &ValidTargetingOptions[i];
+		FVector TargetActorLocation = Target->ContextTargetComponent->GetOwner()->GetActorLocation();
+		FVector ToTarget = TargetActorLocation - EvaluationSourceLocation;
+
+		float DotT = FVector::DotProduct(EvaluationForwardDirection, ToTarget.GetUnsafeNormal());
+		Target->DotScore = DotScoreCurve_Rich->Eval(DotT);
+
+		Target->DistanceToTargetingComponent = ToTarget.Length();
+
+		if (Target->DistanceToTargetingComponent < MinDistance)
+			MinDistance = Target->DistanceToTargetingComponent;
+
+		if (Target->DistanceToTargetingComponent > MaxDistance)
+			MaxDistance = Target->DistanceToTargetingComponent;
+	}
+
+	FVector2D DistanceMapInputRange = FVector2D(MinDistance, MaxDistance);
+	FVector2D DistanceMapOutputRange = FVector2D(0.0f, 1.0f);
+
+	for (int32 i = 0; i < TargetsCount; i++)
+	{
+		FTargetingOption* Target = &ValidTargetingOptions[i];
+
+		float DistanceT = FMath::GetMappedRangeValueUnclamped(DistanceMapInputRange, DistanceMapOutputRange, Target->DistanceToTargetingComponent);
+		Target->DistanceScore = DistanceScoreCurve_Rich->Eval(DistanceT);
+
+		Target->TotalScore = Target->DotScore + Target->DistanceScore;
+	}
+}
+
+FVector UMechTargetingComponent::GetScoreEvaluationSourceLocation()
+{
+	if (bUseCameraTransformForScoring && CameraComponent.IsValid())
+	{
+		return CameraComponent->GetComponentLocation();
+	}
+
+	return GetOwner()->GetActorLocation();
+}
+
+FVector UMechTargetingComponent::GetScoreEvaluationForwardDirection()
+{
+	if (bUseCameraTransformForScoring && CameraComponent.IsValid())
+	{
+		return CameraComponent->GetComponentTransform().GetUnitAxis(EAxis::X);
+	}
+
+	return GetOwner()->GetTransform().GetUnitAxis(EAxis::X);
+}
+
+FTargetingOption UMechTargetingComponent::GetBestTargetingOption()
+{
+	FTargetingOption Result = FTargetingOption();
+
+	int32 TargetsCount = ValidTargetingOptions.Num();
+
+	if (TargetsCount == 0)
+		return Result;
+
+	for (int32 i = 0; i < TargetsCount; i++)
+	{
+		FTargetingOption Current = ValidTargetingOptions[i];
+
+		if (Result.IsValid == false)
+		{
+			Result = Current;
+			continue;
+		}
+
+		if (Current.TotalScore > Result.TotalScore)
+			Result = Current;
+	}
+
+	return Result;
 }
