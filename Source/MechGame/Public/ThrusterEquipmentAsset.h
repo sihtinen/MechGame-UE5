@@ -46,6 +46,6 @@ public:
 	FRuntimeFloatCurve DashForceCurve;
 
 public:
-	FBoostParameters GetSustainedBoostParams(float inputAmount);
-	FBoostParameters GetDashBoostParams(float inputAmount);
+	FBoostParameters GetSustainedBoostParams(const float& inputAmount);
+	FBoostParameters GetDashBoostParams(const float& inputAmount);
 };

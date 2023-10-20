@@ -41,12 +41,12 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	FPIDState UpdateTick(FPIDState State, float DeltaTime, float CurrentValue, float TargetValue);
+	void UpdateTick(FPIDState& State, const float& DeltaTime, const float& CurrentValue, const float& TargetValue);
 
 	UFUNCTION(BlueprintCallable)
-	FPIDState UpdateAngleTick(FPIDState State, float DeltaTime, float CurrentAngle, float TargetAngle);
+	void UpdateAngleTick(FPIDState& State, const float& DeltaTime, const float& CurrentAngle, const float& TargetAngle);
 
 private:
 
-	float AngleDifference(float a, float b);
+	float AngleDifference(const float& a, const float& b);
 };

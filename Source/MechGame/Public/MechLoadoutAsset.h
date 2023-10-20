@@ -21,7 +21,7 @@ public:
 public:
 	UMechLoadoutAsset();
 
-	TArray<FSoftObjectPath> GetValidAssetSoftObjectPaths();
+	const TArray<FSoftObjectPath>& GetValidAssetSoftObjectPaths();
 
 private:
 	UPROPERTY()

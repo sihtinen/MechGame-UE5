@@ -18,5 +18,5 @@ public:
 	float VerticalForce;
 
 public:
-	static FBoostParameters Lerp(FBoostParameters a, FBoostParameters b, float t);
+	static FBoostParameters Lerp(const FBoostParameters& a, const FBoostParameters& b, const float& t);
 };

@@ -3,7 +3,7 @@
 
 #include "BoostParameters.h"
 
-FBoostParameters FBoostParameters::Lerp(FBoostParameters a, FBoostParameters b, float t)
+FBoostParameters FBoostParameters::Lerp(const FBoostParameters& a, const FBoostParameters& b, const float& t)
 {
 	FBoostParameters Result;
 	Result.HorizontalForce = FMath::Lerp(a.HorizontalForce, b.HorizontalForce, t);

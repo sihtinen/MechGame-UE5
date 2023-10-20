@@ -3,12 +3,12 @@
 
 #include "ThrusterEquipmentAsset.h"
 
-FBoostParameters UThrusterEquipmentAsset::GetSustainedBoostParams(float inputAmount)
+FBoostParameters UThrusterEquipmentAsset::GetSustainedBoostParams(const float& inputAmount)
 {
 	return FBoostParameters::Lerp(SustainedBoostParams_Vertical, SustainedBoostParams_Horizontal, inputAmount);
 }
 
-FBoostParameters UThrusterEquipmentAsset::GetDashBoostParams(float inputAmount)
+FBoostParameters UThrusterEquipmentAsset::GetDashBoostParams(const float& inputAmount)
 {
 	return FBoostParameters::Lerp(DashBoostParams_Vertical, DashBoostParams_Horizontal, inputAmount);
 }

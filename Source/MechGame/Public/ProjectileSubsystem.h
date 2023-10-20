@@ -23,7 +23,23 @@ public:
 		return GetStatID();
 	}
 
+	UFUNCTION(BlueprintCallable)
+	void SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction);
+
 private:
 
+	FHitResult TraceHitResult;
+
 	TArray<FProjectileState> ActiveProjectiles;
+
+	TArray<AActor*> TraceIgnoredActors;
+
+private:
+
+	/**
+	Updates projectile state
+	Returns TRUE if projectile is alive
+	FALSE if projectile has collided or life time has expired
+	*/
+	bool UpdateProjectile(FProjectileState& Projectile, const float& DeltaTime);
 };

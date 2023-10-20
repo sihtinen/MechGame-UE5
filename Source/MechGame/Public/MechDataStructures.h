@@ -97,10 +97,13 @@ struct FProjectileState
 public:
 
     UPROPERTY(BlueprintReadOnly)
+    float AliveTime;
+
+    UPROPERTY(BlueprintReadOnly)
     FVector Location;
 
     UPROPERTY(BlueprintReadOnly)
-    FVector Direction;
+    FVector ForwardDirection;
 
     UPROPERTY(BlueprintReadOnly)
     FVector Velocity;
@@ -110,5 +113,10 @@ public:
 
     UPROPERTY(BlueprintReadOnly)
     TWeakObjectPtr<UProjectileAsset> ProjectileAsset;
+
+public:
+
+    FProjectileState();
+    FProjectileState(AActor* OwnerActor, UProjectileAsset* Asset);
 
 };

@@ -9,7 +9,6 @@
 #include "PIDState.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
-#include "PhysicsUtils.h"
 #include "AsyncTickFunctions.h"
 #include "Engine/AssetManager.h"
 #include "MechWeaponComponent.h"
@@ -151,7 +150,7 @@ void AMech::UpdateRideHeightPID(float DeltaTime)
 	float CurrentValue = FVector::Distance(HitLocation, PivotLocation);
 	float TargetValue = PhysicsDataAsset->SurfaceRideHeight;
 
-	RideHeightPIDState = RideHeightPID->UpdateTick(RideHeightPIDState, DeltaTime, CurrentValue, TargetValue);
+	RideHeightPID->UpdateTick(RideHeightPIDState, DeltaTime, CurrentValue, TargetValue);
 
 	float FilteredPIDOutput = RideHeightPIDState.Output;
 	if (bBoostInputActive)
@@ -170,7 +169,7 @@ void AMech::UpdateForwardDirection(float DeltaTime)
 	float ControlRotationYaw = GetControlRotation().GetNormalized().GetComponentForAxis(EAxis::Z);
 	FVector RotateAxis = Transform.GetUnitAxis(EAxis::Z);
 
-	ForwardDirectionPIDState = ForwardDirectionPID->UpdateAngleTick(ForwardDirectionPIDState, DeltaTime, CurrentYaw, ControlRotationYaw);
+	ForwardDirectionPID->UpdateAngleTick(ForwardDirectionPIDState, DeltaTime, CurrentYaw, ControlRotationYaw);
 
 	FVector Torque = ForwardDirectionPIDState.Output * RotateAxis;
 

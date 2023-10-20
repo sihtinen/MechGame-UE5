@@ -3,7 +3,7 @@
 
 #include "PIDAsset.h"
 
-FPIDState UPIDAsset::UpdateTick(FPIDState State, float DeltaTime, float CurrentValue, float TargetValue)
+void UPIDAsset::UpdateTick(FPIDState& State, const float& DeltaTime, const float& CurrentValue, const float& TargetValue)
 {
     float Error = TargetValue - CurrentValue;
 
@@ -50,11 +50,9 @@ FPIDState UPIDAsset::UpdateTick(FPIDState State, float DeltaTime, float CurrentV
     State.P = P;
     State.I = I;
     State.D = D;
-
-    return State;
 }
 
-FPIDState UPIDAsset::UpdateAngleTick(FPIDState State, float DeltaTime, float CurrentAngle, float TargetAngle)
+void UPIDAsset::UpdateAngleTick(FPIDState& State, const float& DeltaTime, const float& CurrentAngle, const float& TargetAngle)
 {
     float Error = AngleDifference(TargetAngle, CurrentAngle);
 
@@ -95,11 +93,12 @@ FPIDState UPIDAsset::UpdateAngleTick(FPIDState State, float DeltaTime, float Cur
     State.Output = P + I + D;
     State.Output = FMath::Clamp(State.Output, OutputMin, OutputMax);
 
-    return State;
+    if (bEnabled == false)
+        State.Output = 0;
 }
 
 //calculate modular difference, and remap to [-180, 180]
-float UPIDAsset::AngleDifference(float a, float b)
+float UPIDAsset::AngleDifference(const float& a, const float& b)
 {
     float StepA = FMath::Fmod((a - b + 540), 360);
     float Result = StepA - 180;

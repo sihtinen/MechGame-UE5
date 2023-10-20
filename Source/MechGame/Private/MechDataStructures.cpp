@@ -2,6 +2,7 @@
 
 
 #include "MechDataStructures.h"
+#include "ProjectileAsset.h"
 
 FTargetingOption::FTargetingOption()
 {
@@ -19,4 +20,16 @@ FVector FTargetingOption::GetLocation()
 FVector FTargetingOption::GetVelocity()
 {
 	return FVector();
+}
+
+FProjectileState::FProjectileState()
+{
+}
+
+FProjectileState::FProjectileState(AActor* Owner, UProjectileAsset* Asset)
+{
+	OwnerActor = Owner;
+	ProjectileAsset = Asset;
+
+	AliveTime = 0.0f;
 }

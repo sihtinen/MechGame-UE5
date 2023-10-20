@@ -15,7 +15,7 @@ UMechLoadoutAsset::UMechLoadoutAsset()
 	}
 }
 
-TArray<FSoftObjectPath> UMechLoadoutAsset::GetValidAssetSoftObjectPaths()
+const TArray<FSoftObjectPath>& UMechLoadoutAsset::GetValidAssetSoftObjectPaths()
 {
 	AssetSoftObjectPaths.Reset();
 

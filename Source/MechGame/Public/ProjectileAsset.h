@@ -14,6 +14,9 @@ class MECHGAME_API UProjectileAsset : public UDataAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 Damage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InitialSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -27,4 +30,11 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float CollisionRadius;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float LifeTime;
+
+public:
+
+	UProjectileAsset();
 };
