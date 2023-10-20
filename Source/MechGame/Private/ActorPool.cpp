@@ -33,8 +33,6 @@ void AActorPool::InitializePool()
 
 	PopulatePool(InitialPoolSize);
 
-
-
 	bPoolInitialized = true;
 }
 

@@ -23,5 +23,6 @@ public:
 
 private:
 
+	TArray<AActor*> PooledActorsSearchResults;
 	TMap<TSubclassOf<class APooledActor>, TWeakObjectPtr<class AActorPool>> RegisteredActorPools;
 };
