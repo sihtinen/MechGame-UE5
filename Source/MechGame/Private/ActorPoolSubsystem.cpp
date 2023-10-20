@@ -46,6 +46,8 @@ AActorPool* UActorPoolSubsystem::GetActorPool(TSubclassOf<class APooledActor> Qu
 
 			if (CurrentPool->PooledActorSubclass == QueryPooledObjectSubclass)
 			{
+				PooledActorsSearchResults.Reset();
+
 				CurrentPool->InitializePool();
 				return CurrentPool;
 			}
