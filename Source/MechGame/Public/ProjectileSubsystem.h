@@ -42,4 +42,6 @@ private:
 	FALSE if projectile has collided or life time has expired
 	*/
 	bool UpdateProjectile(FProjectileState& Projectile, const float& DeltaTime);
+
+	void InitializeProjectileVisualActor(UProjectileAsset* ProjectileAsset, FProjectileState& NewProjectile);
 };

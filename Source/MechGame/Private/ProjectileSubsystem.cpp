@@ -4,6 +4,11 @@
 #include "Logging/StructuredLog.h"
 #include "ProjectileAsset.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "PooledActor.h"
+#include "Engine/World.h"
+#include "ActorPoolSubsystem.h"
+#include "ActorPool.h"
 
 void UProjectileSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -25,7 +30,16 @@ void UProjectileSubsystem::Tick(float DeltaTime)
 		bool bProjectileAlive = UpdateProjectile(ActiveProjectiles[i], DeltaTime);
 
 		if (bProjectileAlive == false)
+		{
+			if (ActiveProjectiles[i].VisualActor.IsValid())
+			{
+				ActiveProjectiles[i].VisualActor->Deactivate();
+				ActiveProjectiles[i].VisualActor->ReturnToPool();
+				ActiveProjectiles[i].VisualActor = nullptr;
+			}
+
 			ActiveProjectiles.RemoveAt(i);
+		}
 	}
 }
 
@@ -48,7 +62,34 @@ void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset
 	NewProjectile.ForwardDirection = Direction;
 	NewProjectile.Velocity = ProjectileAsset->InitialSpeed * Direction;
 
+	InitializeProjectileVisualActor(ProjectileAsset, NewProjectile);
+
 	ActiveProjectiles.Add(NewProjectile);
+}
+
+void UProjectileSubsystem::InitializeProjectileVisualActor(UProjectileAsset* ProjectileAsset, FProjectileState& NewProjectile)
+{
+	if (ProjectileAsset->VisualActorSubclass == nullptr)
+		return;
+
+	UWorld* World = GetWorld();
+
+	if (World == nullptr)
+		return;
+
+	UActorPoolSubsystem* ActorPoolSubsystem = World->GetSubsystem<UActorPoolSubsystem>();
+
+	if (ActorPoolSubsystem == nullptr)
+		return;
+
+	AActorPool* ActorPool = ActorPoolSubsystem->GetActorPool(ProjectileAsset->VisualActorSubclass);
+
+	if (ActorPool == nullptr)
+		return;
+
+	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, NewProjectile.ForwardDirection);
+	NewProjectile.VisualActor = ActorPool->GetPooledActor();
+	NewProjectile.VisualActor->SetActorTransform(FTransform(Rotation, NewProjectile.Location));
 }
 
 bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const float& DeltaTime)
@@ -89,6 +130,12 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 	}
 
 	Projectile.AliveTime += DeltaTime;
+
+	if (Projectile.VisualActor.IsValid())
+	{
+		FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, Projectile.ForwardDirection);
+		Projectile.VisualActor->SetActorTransform(FTransform(Rotation, Projectile.Location));
+	}
 
 	const bool bProjectileAlive = (Projectile.AliveTime < Settings->LifeTime);
 

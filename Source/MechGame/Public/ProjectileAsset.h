@@ -34,6 +34,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float LifeTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class APooledActor> VisualActorSubclass;
+
 public:
 
 	UProjectileAsset();
