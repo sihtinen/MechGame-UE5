@@ -99,10 +99,12 @@ public:
 	bool IsGrounded();
 
 	UFUNCTION(BlueprintCallable)
-	UMechWeaponComponent* GetWeaponComponent(EEquipmentSlotType SlotType);
+	void SetFixedFrameRate(uint8 FrameRateTarget);
+
+	void RegisterWeaponComponent(UMechWeaponComponent* Component, const EEquipmentSlotType& SlotType);
 
 	UFUNCTION(BlueprintCallable)
-	void SetFixedFrameRate(uint8 FrameRateTarget);
+	UMechWeaponComponent* GetWeaponComponent(const EEquipmentSlotType& SlotType);
 
 protected:
 
@@ -111,6 +113,9 @@ protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<UCapsuleComponent> CollisionCapsule;
+
+	UPROPERTY()
+	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechWeaponComponent>> WeaponComponentsMap;
 
 protected:
 
@@ -128,12 +133,7 @@ private:
 
 	TSet<int32> PreventMovementSources;
 
-	UPROPERTY()
-	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechWeaponComponent>> WeaponComponentMap;
-
 private:
-
-	void CreateWeaponComponentForSlot(EEquipmentSlotType SlotType);
 
 	void StartLoadingLoadoutAssets();
 

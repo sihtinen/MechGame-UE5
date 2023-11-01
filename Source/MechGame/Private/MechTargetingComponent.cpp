@@ -208,3 +208,8 @@ FTargetingOption UMechTargetingComponent::GetBestTargetingOption()
 
 	return Result;
 }
+
+void UMechTargetingComponent::UpdateWorldTargetLocation(const bool& IsPlayer, const FVector& TargetingReticleViewportPosition)
+{
+
+}

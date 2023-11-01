@@ -68,3 +68,13 @@ AActorPool* UActorPoolSubsystem::GetActorPool(TSubclassOf<class APooledActor> Qu
 
 	return NewActorPool;
 }
+
+APooledActor* UActorPoolSubsystem::GetPooledActor(TSubclassOf<class APooledActor> PooledObjectSubclass, bool ActivateActor)
+{
+	AActorPool* ActorPool = GetActorPool(PooledObjectSubclass);
+
+	if (ActorPool == nullptr)
+		return nullptr;
+
+	return ActorPool->GetPooledActor(ActivateActor);
+}

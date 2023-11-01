@@ -4,9 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "MechDataStructures.h"
 #include "MechEquipmentAsset.generated.h"
-
-class USkeletalMesh;
 
 UCLASS(BlueprintType)
 class MECHGAME_API UMechEquipmentAsset : public UDataAsset
@@ -15,8 +14,11 @@ class MECHGAME_API UMechEquipmentAsset : public UDataAsset
 	
 public:
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
-	TSoftObjectPtr<USkeletalMesh> Mesh;
+	TSoftObjectPtr<class USkeletalMesh> Mesh;
 
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSubclassOf<UAnimInstance> AnimBlueprint;
+
+public:
+	virtual void SetupMechRuntime(class AMech* Mech, const EEquipmentSlotType& Slot);
 };

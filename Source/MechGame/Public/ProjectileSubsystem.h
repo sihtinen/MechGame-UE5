@@ -14,6 +14,8 @@ class MECHGAME_API UProjectileSubsystem : public UTickableWorldSubsystem
 	
 public:
 
+	bool bDrawTraceDebug = false;
+
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Tick(float DeltaTime) override;

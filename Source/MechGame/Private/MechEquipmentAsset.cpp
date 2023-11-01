@@ -3,3 +3,7 @@
 
 #include "MechEquipmentAsset.h"
 
+void UMechEquipmentAsset::SetupMechRuntime(AMech* Mech, const EEquipmentSlotType& Slot)
+{
+
+}

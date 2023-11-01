@@ -23,4 +23,7 @@ public:
 
 	virtual void InitializeComponent() override;
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+
+	UFUNCTION(BlueprintCallable)
+	FVector GetWorldLocation();
 };

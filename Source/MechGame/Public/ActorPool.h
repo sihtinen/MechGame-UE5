@@ -42,7 +42,7 @@ protected:
 
 private:
 
-	TArray<TWeakObjectPtr<APooledActor>> PooledActors;
+	TQueue<TWeakObjectPtr<APooledActor>> PooledActors;
 	TArray<TWeakObjectPtr<APooledActor>> ActiveActors;
 
 private:

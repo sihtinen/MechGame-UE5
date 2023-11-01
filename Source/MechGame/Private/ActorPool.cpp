@@ -28,7 +28,6 @@ void AActorPool::InitializePool()
 
 	ActorPoolSubsystem->RegisterActorPool(this);
 
-	PooledActors.Reserve(InitialPoolSize);
 	ActiveActors.Reserve(InitialPoolSize);
 
 	PopulatePool(InitialPoolSize);
@@ -67,24 +66,25 @@ void AActorPool::PopulatePool(int SpawnedActorCount)
 		NewPooledActor->RegisterSourcePool(this);
 		NewPooledActor->Deactivate();
 
-		PooledActors.Push(NewPooledActor);
+		PooledActors.Enqueue(NewPooledActor);
 	}
 }
 
 APooledActor* AActorPool::GetPooledActor(bool ActivatePooledActor)
 {
-	if (PooledActors.Num() == 0)
+	if (PooledActors.IsEmpty())
 		PopulatePool(PoolExpandCount);
 
-	if (PooledActors.Num() > 0)
+	if (PooledActors.IsEmpty() == false)
 	{
-		APooledActor* PooledActor = PooledActors.Pop(false).Get();
+		TWeakObjectPtr<APooledActor> PooledActor;
+		PooledActors.Dequeue(PooledActor);
 		ActiveActors.Push(PooledActor);
 
 		if (ActivatePooledActor)
 			PooledActor->Activate();
 
-		return PooledActor;
+		return PooledActor.Get();
 	}
 
 	return nullptr;
@@ -101,5 +101,5 @@ void AActorPool::ReturnActorToPool(APooledActor* PooledActor)
 	if (ActiveActors.Contains(PooledActor))
 		ActiveActors.Remove(PooledActor);
 
-	PooledActors.Push(PooledActor);
+	PooledActors.Enqueue(PooledActor);
 }

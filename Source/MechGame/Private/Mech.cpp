@@ -27,26 +27,23 @@ void AMech::BeginPlay()
 	CollisionCapsule = Cast<UCapsuleComponent>(GetComponentByClass(UCapsuleComponent::StaticClass()));
 	CollisionCapsule->SetLinearDamping(0.0f);
 
-	CreateWeaponComponentForSlot(EEquipmentSlotType::LeftArm);
-	CreateWeaponComponentForSlot(EEquipmentSlotType::RightArm);
-	CreateWeaponComponentForSlot(EEquipmentSlotType::LeftShoulder);
-	CreateWeaponComponentForSlot(EEquipmentSlotType::RightShoulder);
+	if (LoadoutAsset == false)
+		return;
 
-	if (LoadoutAsset)
-		StartLoadingLoadoutAssets();
-}
+	int MaxIndex = (int)EEquipmentSlotType::MAX;
 
-void AMech::CreateWeaponComponentForSlot(EEquipmentSlotType SlotType)
-{
-	bool UseManualAttachment = false;
+	for (int i = 0; i < MaxIndex; i++)
+	{
+		EEquipmentSlotType SlotType = (EEquipmentSlotType)i;
+		TObjectPtr<UMechEquipmentAsset> Asset = LoadoutAsset->Slots[SlotType];
 
-	TWeakObjectPtr<UMechWeaponComponent> WeaponComponent = 
-		Cast<UMechWeaponComponent>(AddComponentByClass(UMechWeaponComponent::StaticClass(), UseManualAttachment, FTransform(), true));
-	
-	FinishAddComponent(WeaponComponent.Get(), UseManualAttachment, FTransform());
-	AddInstanceComponent(WeaponComponent.Get());
+		if (Asset == false)
+			continue;
 
-	WeaponComponentMap.Add(SlotType, WeaponComponent);
+		Asset->SetupMechRuntime(this, SlotType);
+	}
+
+	StartLoadingLoadoutAssets();
 }
 
 void AMech::StartLoadingLoadoutAssets()
@@ -323,16 +320,6 @@ bool AMech::IsGrounded()
 	return (GroundHitResult.bBlockingHit || GroundHitResult.bStartPenetrating);
 }
 
-UMechWeaponComponent* AMech::GetWeaponComponent(EEquipmentSlotType SlotType)
-{
-	if (WeaponComponentMap.Contains(SlotType))
-	{
-		return WeaponComponentMap[SlotType].Get();
-	}
-
-	return nullptr;
-}
-
 void AMech::SetFixedFrameRate(uint8 FrameRateTarget)
 {
 	if (GEngine)
@@ -341,4 +328,17 @@ void AMech::SetFixedFrameRate(uint8 FrameRateTarget)
 		FrameRateRange.SetUpperBoundValue(FrameRateTarget);
 		GEngine->SmoothedFrameRateRange = FrameRateRange;
 	}
+}
+
+void AMech::RegisterWeaponComponent(UMechWeaponComponent* Component, const EEquipmentSlotType& SlotType)
+{
+	WeaponComponentsMap.Add(SlotType, Component);
+}
+
+UMechWeaponComponent* AMech::GetWeaponComponent(const EEquipmentSlotType& SlotType)
+{
+	if (WeaponComponentsMap.Contains(SlotType))
+		return WeaponComponentsMap[SlotType].Get();
+
+	return nullptr;
 }

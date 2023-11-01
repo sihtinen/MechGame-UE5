@@ -6,9 +6,6 @@
 #include "Subsystems/WorldSubsystem.h"
 #include "ActorPoolSubsystem.generated.h"
 
-/**
- * 
- */
 UCLASS()
 class MECHGAME_API UActorPoolSubsystem : public UWorldSubsystem
 {
@@ -20,6 +17,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	AActorPool* GetActorPool(TSubclassOf<class APooledActor> PooledObjectSubclass);
+
+	UFUNCTION(BlueprintCallable)
+	class APooledActor* GetPooledActor(TSubclassOf<class APooledActor> PooledObjectSubclass, bool ActivateActor = true);
 
 private:
 

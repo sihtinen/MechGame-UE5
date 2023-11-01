@@ -2,6 +2,8 @@
 
 
 #include "MechWeaponComponent.h"
+#include "Mech.h"
+#include "MechProjectileWeaponAsset.h"
 
 UMechWeaponComponent::UMechWeaponComponent()
 {
@@ -11,6 +13,15 @@ UMechWeaponComponent::UMechWeaponComponent()
 void UMechWeaponComponent::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void UMechWeaponComponent::SetupGameplay(AMech* MechActor, UMechProjectileWeaponAsset* WeaponAsset, const EEquipmentSlotType& SlotType)
+{
+	Mech = MechActor;
+	SettingsAsset = WeaponAsset;
+	Slot = SlotType;
+
+	Mech->RegisterWeaponComponent(this, SlotType);
 }
 
 void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

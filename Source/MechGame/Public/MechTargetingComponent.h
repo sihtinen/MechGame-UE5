@@ -53,6 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FTargetingOption GetBestTargetingOption();
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateWorldTargetLocation(const bool& IsPlayer, const FVector& TargetingReticleViewportPosition);
+
 protected:
 
 	virtual void BeginPlay() override;

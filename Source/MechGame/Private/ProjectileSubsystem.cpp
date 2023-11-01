@@ -72,24 +72,15 @@ void UProjectileSubsystem::InitializeProjectileVisualActor(UProjectileAsset* Pro
 	if (ProjectileAsset->VisualActorSubclass == nullptr)
 		return;
 
-	UWorld* World = GetWorld();
-
-	if (World == nullptr)
-		return;
-
-	UActorPoolSubsystem* ActorPoolSubsystem = World->GetSubsystem<UActorPoolSubsystem>();
+	UActorPoolSubsystem* ActorPoolSubsystem = GetWorld()->GetSubsystem<UActorPoolSubsystem>();
 
 	if (ActorPoolSubsystem == nullptr)
 		return;
 
-	AActorPool* ActorPool = ActorPoolSubsystem->GetActorPool(ProjectileAsset->VisualActorSubclass);
-
-	if (ActorPool == nullptr)
-		return;
-
 	FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, NewProjectile.ForwardDirection);
-	NewProjectile.VisualActor = ActorPool->GetPooledActor();
+	NewProjectile.VisualActor = ActorPoolSubsystem->GetPooledActor(ProjectileAsset->VisualActorSubclass, false);
 	NewProjectile.VisualActor->SetActorTransform(FTransform(Rotation, NewProjectile.Location));
+	NewProjectile.VisualActor->Activate();
 }
 
 bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const float& DeltaTime)
@@ -106,7 +97,7 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 	const ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
 	const bool TraceAgainstComplexGeo = false;
 	const bool IgnoreSelf = true;
-	const EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForOneFrame;
+	const EDrawDebugTrace::Type DrawDebugType = (bDrawTraceDebug ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None);
 
 	TraceIgnoredActors[0] = Projectile.OwnerActor.Get();
 
@@ -126,6 +117,12 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 
 	if (bTraceHitFound)
 	{
+		if (Projectile.VisualActor.IsValid())
+		{
+			FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, Projectile.ForwardDirection);
+			Projectile.VisualActor->SetActorTransform(FTransform(Rotation, TraceHitResult.ImpactPoint));
+		}
+
 		return false;
 	}
 

@@ -41,6 +41,11 @@ void UContextTargetComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	}
 }
 
+FVector UContextTargetComponent::GetWorldLocation()
+{
+	return GetOwner()->GetActorLocation();
+}
+
 void UContextTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
