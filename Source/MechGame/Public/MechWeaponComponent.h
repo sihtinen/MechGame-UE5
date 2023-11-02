@@ -18,6 +18,9 @@ public:
 	TWeakObjectPtr<class UMechProjectileWeaponAsset> SettingsAsset;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool bInputActive = false;
+
+	UPROPERTY(BlueprintReadOnly)
 	EEquipmentSlotType Slot;
 
 public:	
@@ -32,9 +35,15 @@ public:
 	bool IsAiming();
 
 protected:
+
 	UPROPERTY()
 	TWeakObjectPtr<class AMech> Mech;
 
 protected:
+
 	virtual void BeginPlay() override;
+
+	UFUNCTION()
+	void OnInputSlotStateUpdated(const EEquipmentSlotType& SlotType, bool IsPressed);
+
 };

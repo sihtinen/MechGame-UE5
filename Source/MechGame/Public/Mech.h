@@ -19,6 +19,8 @@ class UCapsuleComponent;
 class UAnimBlueprint;
 class UMechWeaponComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputSlotStateUpdated, const EEquipmentSlotType&, SlotType, bool, IsPressed);
+
 UCLASS()
 class MECHGAME_API AMech : public AAsyncTickPawn
 {
@@ -69,6 +71,9 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Mech Runtime Properties")
 	float BodyRotationDampingRatio;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnInputSlotStateUpdated OnInputSlotStateUpdated;
+
 public:
 
 	AMech();
@@ -106,6 +111,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	UMechWeaponComponent* GetWeaponComponent(const EEquipmentSlotType& SlotType);
 
+	UFUNCTION(BlueprintCallable)
+	void UpdateSlotInputState(const EEquipmentSlotType& SlotInput, const bool& IsPressed);
+
 protected:
 
 	UPROPERTY()
@@ -116,6 +124,9 @@ protected:
 
 	UPROPERTY()
 	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechWeaponComponent>> WeaponComponentsMap;
+
+	UPROPERTY()
+	TMap<EEquipmentSlotType, bool> SlotInputStates;
 
 protected:
 
@@ -136,6 +147,8 @@ private:
 private:
 
 	void StartLoadingLoadoutAssets();
+
+	void Internal_OnLoadoutAssetsLoadedToMemory();
 
 	void DoSurfaceCheck(bool IsAsync);
 

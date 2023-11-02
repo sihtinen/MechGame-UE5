@@ -22,6 +22,7 @@ void UMechWeaponComponent::SetupGameplay(AMech* MechActor, UMechProjectileWeapon
 	Slot = SlotType;
 
 	Mech->RegisterWeaponComponent(this, SlotType);
+	Mech->OnInputSlotStateUpdated.AddDynamic(this, &UMechWeaponComponent::OnInputSlotStateUpdated);
 }
 
 void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -31,5 +32,13 @@ void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 
 bool UMechWeaponComponent::IsAiming()
 {
-	return true;
+	return bInputActive;
+}
+
+void UMechWeaponComponent::OnInputSlotStateUpdated(const EEquipmentSlotType& SlotType, bool IsPressed)
+{
+	if (SlotType != Slot)
+		return;
+
+	bInputActive = IsPressed;
 }

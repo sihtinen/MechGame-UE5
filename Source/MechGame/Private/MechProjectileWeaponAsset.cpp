@@ -8,10 +8,10 @@ void UMechProjectileWeaponAsset::SetupMechRuntime(AMech* Mech, const EEquipmentS
 {
 	bool bManualAttachment = false;
 
-	UMechWeaponComponent* WeaponComponent = Cast<UMechWeaponComponent>(Mech->AddComponentByClass(UMechWeaponComponent::StaticClass(), bManualAttachment, FTransform::Identity, false));
+	UMechWeaponComponent* WeaponComponent = Cast<UMechWeaponComponent>(Mech->AddComponentByClass(UMechWeaponComponent::StaticClass(), bManualAttachment, FTransform::Identity, true));
+
+	Mech->AddInstanceComponent(WeaponComponent);
+	Mech->FinishAddComponent(WeaponComponent, bManualAttachment, FTransform::Identity);
 
 	WeaponComponent->SetupGameplay(Mech, this, Slot);
-
-	Mech->FinishAddComponent(WeaponComponent, bManualAttachment, FTransform::Identity);
-	Mech->AddInstanceComponent(WeaponComponent);
 }

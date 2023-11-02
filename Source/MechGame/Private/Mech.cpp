@@ -53,8 +53,17 @@ void AMech::StartLoadingLoadoutAssets()
 	if (LoadoutAssetSoftObjectPaths.IsEmpty())
 		return;
 
-	FSimpleDelegate Delegate = FStreamableDelegate::CreateUObject(this, &AMech::OnLoadoutAssetsLoadedToMemory);
+	FSimpleDelegate Delegate = FStreamableDelegate::CreateUObject(this, &AMech::Internal_OnLoadoutAssetsLoadedToMemory);
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(LoadoutAssetSoftObjectPaths, Delegate);
+}
+
+void AMech::Internal_OnLoadoutAssetsLoadedToMemory()
+{
+	// assemble mech parts in blueprint code
+	OnLoadoutAssetsLoadedToMemory();
+
+	// post-process, spawn additional parts in C++
+
 }
 
 void AMech::Tick(float DeltaTime)
@@ -341,4 +350,20 @@ UMechWeaponComponent* AMech::GetWeaponComponent(const EEquipmentSlotType& SlotTy
 		return WeaponComponentsMap[SlotType].Get();
 
 	return nullptr;
+}
+
+void AMech::UpdateSlotInputState(const EEquipmentSlotType& SlotInput, const bool& IsPressed)
+{
+	if (SlotInputStates.Contains(SlotInput) == false)
+	{
+		// add opposite state by default -> bypass following early exit gate and trigger input state update event
+		SlotInputStates.Add(SlotInput, IsPressed == false);
+	}
+
+	if (SlotInputStates[SlotInput] == IsPressed)
+		return;
+
+	SlotInputStates[SlotInput] = IsPressed;
+
+	OnInputSlotStateUpdated.Broadcast(SlotInput, IsPressed);
 }
