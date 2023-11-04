@@ -6,6 +6,8 @@
 #include "ContextTargetComponent.h"
 #include "Math/NumericLimits.h"
 #include "Camera/CameraComponent.h"
+#include "Mech.h"
+#include "GameFramework/PlayerController.h"
 
 UMechTargetingComponent::UMechTargetingComponent()
 {
@@ -15,6 +17,8 @@ UMechTargetingComponent::UMechTargetingComponent()
 void UMechTargetingComponent::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Mech = Cast<AMech>(GetOwner());
 }
 
 void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -35,12 +39,13 @@ void UMechTargetingComponent::TickComponent(float DeltaTime, ELevelTick TickType
 
 	// all processing completed -> update UI / draw debug lines / other logic in BP or other C++ classes
 	OnTargetingOptionsProcessingCompleted.Broadcast();
+
+	UpdateWorldTargetLocation();
 }
 
 void UMechTargetingComponent::CalculateValidContextTargets()
 {
-	AActor* OwnerActor = GetOwner();
-
+	auto OwnerActor = Mech.Get();
 	auto GameInstance = UGameplayStatics::GetGameInstance(OwnerActor);
 
 	if (GameInstance == nullptr)
@@ -78,7 +83,7 @@ void UMechTargetingComponent::CalculateValidContextTargets()
 
 void UMechTargetingComponent::FilterTargetingOptions_LineOfSight()
 {
-	AActor* OwnerActor = GetOwner();
+	auto OwnerActor = Mech.Get();
 
 	FVector TraceStartLocation = OwnerActor->GetActorLocation();
 
@@ -209,7 +214,27 @@ FTargetingOption UMechTargetingComponent::GetBestTargetingOption()
 	return Result;
 }
 
-void UMechTargetingComponent::UpdateWorldTargetLocation(const bool& IsPlayer, const FVector& TargetingReticleViewportPosition)
+void UMechTargetingComponent::RegisterPlayerReticleViewportLocation(const FVector2D& Location)
 {
+	ReticleViewportLocation = Location;
+}
 
+void UMechTargetingComponent::UpdateWorldTargetLocation()
+{
+	if (ValidTargetingOptions.Num() > 0)
+	{
+		FTargetingOption BestTarget = GetBestTargetingOption();
+		WorldTargetLocation = BestTarget.GetLocation();
+		return;
+	}
+
+	if (Mech->IsPlayerControlled())
+	{
+		APlayerController* PlayerController = Cast<APlayerController>(Mech->GetController());
+
+		FVector WorldLocation;
+		FVector WorldDirection;
+
+		PlayerController->DeprojectScreenPositionToWorld(ReticleViewportLocation.X, ReticleViewportLocation.Y, WorldLocation, WorldDirection);
+	}
 }

@@ -3,6 +3,7 @@
 
 #include "MechDataStructures.h"
 #include "ProjectileAsset.h"
+#include "ContextTargetComponent.h"
 
 FTargetingOption::FTargetingOption()
 {
@@ -14,16 +15,23 @@ FTargetingOption::FTargetingOption()
 
 FVector FTargetingOption::GetLocation()
 {
+	if (ContextTargetComponent.IsValid())
+		return ContextTargetComponent->GetWorldLocation();
+
 	return FVector();
 }
 
 FVector FTargetingOption::GetVelocity()
 {
+	if (ContextTargetComponent.IsValid())
+		return ContextTargetComponent->GetOwner()->GetVelocity();
+
 	return FVector();
 }
 
 FProjectileState::FProjectileState()
 {
+	AliveTime = 0.0f;
 }
 
 FProjectileState::FProjectileState(AActor* Owner, UProjectileAsset* Asset)

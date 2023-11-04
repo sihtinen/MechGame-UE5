@@ -5,6 +5,7 @@
 #include "MechPhysicsAsset.h"
 #include "MechLoadoutAsset.h"
 #include "MechEquipmentAsset.h"
+#include "MechTargetingComponent.h"
 #include "PIDAsset.h"
 #include "PIDState.h"
 #include "Components/CapsuleComponent.h"
@@ -26,6 +27,8 @@ void AMech::BeginPlay()
 
 	CollisionCapsule = Cast<UCapsuleComponent>(GetComponentByClass(UCapsuleComponent::StaticClass()));
 	CollisionCapsule->SetLinearDamping(0.0f);
+
+	TargetingComponent = Cast<UMechTargetingComponent>(GetComponentByClass(UMechTargetingComponent::StaticClass()));
 
 	if (LoadoutAsset == false)
 		return;
@@ -366,4 +369,12 @@ void AMech::UpdateSlotInputState(const EEquipmentSlotType& SlotInput, const bool
 	SlotInputStates[SlotInput] = IsPressed;
 
 	OnInputSlotStateUpdated.Broadcast(SlotInput, IsPressed);
+}
+
+bool AMech::IsPlayerPawn()
+{
+	if (Controller == false)
+		return false;
+
+	return Controller->IsPlayerController();
 }

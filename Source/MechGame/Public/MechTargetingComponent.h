@@ -7,6 +7,7 @@
 #include "MechDataStructures.h"
 #include "MechTargetingComponent.generated.h"
 
+class AMech;
 class UContextTargetComponent;
 class UCameraComponent;
 
@@ -54,7 +55,7 @@ public:
 	FTargetingOption GetBestTargetingOption();
 
 	UFUNCTION(BlueprintCallable)
-	void UpdateWorldTargetLocation(const bool& IsPlayer, const FVector& TargetingReticleViewportPosition);
+	void RegisterPlayerReticleViewportLocation(const FVector2D& ReticleViewportLocation);
 
 protected:
 
@@ -63,12 +64,19 @@ protected:
 private:
 
 	UPROPERTY()
+	TWeakObjectPtr<AMech> Mech;
+
+	UPROPERTY()
 	TArray<TWeakObjectPtr<UContextTargetComponent>> ValidContextTargetsArray;
 
 	UPROPERTY()
 	TArray<AActor*> TraceIgnoredActors;
 
 	FHitResult TraceHitResult;
+
+	FVector2D ReticleViewportLocation;
+
+	FVector WorldTargetLocation;
 
 private:
 
@@ -81,4 +89,6 @@ private:
 	FVector GetScoreEvaluationSourceLocation();
 
 	FVector GetScoreEvaluationForwardDirection();
+
+	void UpdateWorldTargetLocation();
 };

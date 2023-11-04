@@ -18,6 +18,7 @@ class UPIDAsset;
 class UCapsuleComponent;
 class UAnimBlueprint;
 class UMechWeaponComponent;
+class UMechTargetingComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputSlotStateUpdated, const EEquipmentSlotType&, SlotType, bool, IsPressed);
 
@@ -40,6 +41,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Mech Base Settings")
 	TObjectPtr<UPIDAsset> ForwardDirectionPID;
 
+	UPROPERTY()
+	TWeakObjectPtr<UMechTargetingComponent> TargetingComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mech Runtime Properties")
 	bool bBoostInputActive;
@@ -113,6 +116,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void UpdateSlotInputState(const EEquipmentSlotType& SlotInput, const bool& IsPressed);
+
+	UFUNCTION(BlueprintCallable)
+	bool IsPlayerPawn();
 
 protected:
 

@@ -21,7 +21,7 @@ public:
 	bool bInputActive = false;
 
 	UPROPERTY(BlueprintReadOnly)
-	EEquipmentSlotType Slot;
+	EEquipmentSlotType Slot = EEquipmentSlotType::MAX;
 
 public:	
 
@@ -46,4 +46,11 @@ protected:
 	UFUNCTION()
 	void OnInputSlotStateUpdated(const EEquipmentSlotType& SlotType, bool IsPressed);
 
+	FVector GetShootDirection(const FVector& ShootLocation);
+
+private:
+
+	bool bFiredPreviousTick = false;
+
+	double TimePreviouslyFired;
 };
