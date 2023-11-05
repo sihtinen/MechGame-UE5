@@ -100,5 +100,12 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 		return (ToTarget.GetUnsafeNormal());
 	}
 
+	if (Mech->IsPlayerControlled())
+	{
+		const FVector& WorldTargetLocation = Mech->TargetingComponent->WorldTargetLocation;
+		FVector ToWorldTarget = (WorldTargetLocation - ShootLocation);
+		return (ToWorldTarget.GetUnsafeNormal());
+	}
+
 	return Mech->GetActorForwardVector();
 }

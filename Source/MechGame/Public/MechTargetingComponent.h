@@ -45,6 +45,9 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnTargetingOptionsProcessingCompleted OnTargetingOptionsProcessingCompleted;
 
+	UPROPERTY(BlueprintReadOnly)
+	FVector WorldTargetLocation;
+
 public:
 
 	UMechTargetingComponent();
@@ -74,9 +77,7 @@ private:
 
 	FHitResult TraceHitResult;
 
-	FVector2D ReticleViewportLocation;
-
-	FVector WorldTargetLocation;
+	FVector2D ReticleScreenLocation;
 
 private:
 

@@ -8,6 +8,7 @@
 #include "Camera/CameraComponent.h"
 #include "Mech.h"
 #include "GameFramework/PlayerController.h"
+#include "UnrealClient.h"
 
 UMechTargetingComponent::UMechTargetingComponent()
 {
@@ -216,7 +217,7 @@ FTargetingOption UMechTargetingComponent::GetBestTargetingOption()
 
 void UMechTargetingComponent::RegisterPlayerReticleViewportLocation(const FVector2D& Location)
 {
-	ReticleViewportLocation = Location;
+	ReticleScreenLocation = Location;
 }
 
 void UMechTargetingComponent::UpdateWorldTargetLocation()
@@ -230,11 +231,33 @@ void UMechTargetingComponent::UpdateWorldTargetLocation()
 
 	if (Mech->IsPlayerControlled())
 	{
-		APlayerController* PlayerController = Cast<APlayerController>(Mech->GetController());
+		APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
 
-		FVector WorldLocation;
-		FVector WorldDirection;
+		if (PlayerController == nullptr)
+			return;
 
-		PlayerController->DeprojectScreenPositionToWorld(ReticleViewportLocation.X, ReticleViewportLocation.Y, WorldLocation, WorldDirection);
+		FVector ReticleWorldLocation;
+		FVector ReticleWorldDirection;
+
+		PlayerController->DeprojectScreenPositionToWorld(ReticleScreenLocation.X, ReticleScreenLocation.Y, ReticleWorldLocation, ReticleWorldDirection);
+
+		FVector TraceEnd = (ReticleWorldLocation + 100000 * ReticleWorldDirection);
+		ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
+		bool TraceAgainstComplexGeo = false;
+		bool IgnoreSelf = true;
+		EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::None;
+
+		bool bTraceHitFound = UKismetSystemLibrary::LineTraceSingle(
+			this,
+			ReticleWorldLocation,
+			TraceEnd,
+			TraceChannel,
+			TraceAgainstComplexGeo,
+			TraceIgnoredActors,
+			DrawDebugType,
+			TraceHitResult,
+			IgnoreSelf);
+
+		WorldTargetLocation = (bTraceHitFound ? TraceHitResult.ImpactPoint : TraceEnd);
 	}
 }
