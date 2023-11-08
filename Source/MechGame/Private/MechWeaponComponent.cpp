@@ -25,6 +25,8 @@ void UMechWeaponComponent::SetupGameplay(AMech* MechActor, UMechProjectileWeapon
 	SettingsAsset = WeaponAsset;
 	Slot = SlotType;
 
+	RemainingUseCount = SettingsAsset->UseCount;
+
 	Mech->RegisterWeaponComponent(this, SlotType);
 	Mech->OnInputSlotStateUpdated.AddDynamic(this, &UMechWeaponComponent::OnInputSlotStateUpdated);
 }
@@ -39,7 +41,7 @@ void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	bool _FiredLastTick = bFiredPreviousTick;
 	bFiredPreviousTick = false;
 
-	if (bInputActive == false)
+	if (bInputActive == false || RemainingUseCount <= 0)
 		return;
 
 	double TimeNow = UGameplayStatics::GetTimeSeconds(this);
@@ -75,6 +77,10 @@ void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 			InstanceSpawnLocation += DeltaTime * SettingsAsset->ProjectileAsset->InitialSpeed * ShootDirection;
 
 		ProjectileSubsystem->SpawnProjectile(Mech.Get(), SettingsAsset->ProjectileAsset, InstanceSpawnLocation, ShootDirection);
+
+		RemainingUseCount--;
+
+		Execute_OnUseCountUpdated(this, RemainingUseCount);
 	}
 }
 
@@ -108,4 +114,25 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 	}
 
 	return Mech->GetActorForwardVector();
+}
+
+const FName UMechWeaponComponent::GetDisplayName_Implementation()
+{
+	if (SettingsAsset.IsValid() == false)
+		return GetFName();
+
+	return SettingsAsset->DisplayName;
+}
+
+int32 UMechWeaponComponent::GetMaxUseCount_Implementation()
+{
+	if (SettingsAsset.IsValid() == false)
+		return 0;
+
+	return SettingsAsset->UseCount;
+}
+
+int32 UMechWeaponComponent::GetRemainingUseCount_Implementation()
+{
+	return RemainingUseCount;
 }

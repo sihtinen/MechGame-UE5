@@ -15,6 +15,7 @@ class MECHGAME_API UMechLoadoutAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TMap<EEquipmentSlotType, TObjectPtr<UMechEquipmentAsset>> Slots;
 

@@ -14,6 +14,9 @@ class MECHGAME_API UMechProjectileWeaponAsset : public UMechEquipmentAsset
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	int32 UseCount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
 	float UseRatePerSecond = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);

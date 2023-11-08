@@ -3,12 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
+#include "MechEquipmentAsset.h"
 #include "BoostParameters.h"
 #include "ThrusterEquipmentAsset.generated.h"
 
 UCLASS()
-class MECHGAME_API UThrusterEquipmentAsset : public UDataAsset
+class MECHGAME_API UThrusterEquipmentAsset : public UMechEquipmentAsset
 {
 	GENERATED_BODY()
 	

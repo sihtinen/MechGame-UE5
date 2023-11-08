@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "MechDataStructures.h"
+#include "EquipmentWidgetSourceInterface.h"
 #include "MechWeaponComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MECHGAME_API UMechWeaponComponent : public UActorComponent
+class MECHGAME_API UMechWeaponComponent : public UActorComponent, public IEquipmentWidgetSourceInterface
 {
 	GENERATED_BODY()
 
@@ -34,10 +35,24 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAiming();
 
+//IEquipmentWidgetSourceInterface implementation
+public:
+
+	UFUNCTION()
+	const FName GetDisplayName_Implementation() override;
+
+	UFUNCTION()
+	int32 GetMaxUseCount_Implementation() override;
+
+	UFUNCTION()
+	int32 GetRemainingUseCount_Implementation() override;
+
 protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<class AMech> Mech;
+
+	int32 RemainingUseCount;
 
 protected:
 

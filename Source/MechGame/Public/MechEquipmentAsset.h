@@ -13,6 +13,10 @@ class MECHGAME_API UMechEquipmentAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
+
+	UPROPERTY(BlueprintReadOnly, EditAnywhere)
+	FName DisplayName;
+
 	UPROPERTY(BlueprintReadOnly, EditAnywhere)
 	TSoftObjectPtr<class USkeletalMesh> Mesh;
 
