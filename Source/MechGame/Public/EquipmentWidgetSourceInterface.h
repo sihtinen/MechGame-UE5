@@ -30,7 +30,4 @@ public:
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 	int32 GetRemainingUseCount();
 	virtual int32 GetRemainingUseCount_Implementation() { return 0; }
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void OnUseCountUpdated(const int32& RemainingUseCount);
 };

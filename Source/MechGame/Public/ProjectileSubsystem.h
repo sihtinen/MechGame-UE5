@@ -26,7 +26,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	void SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction);
+	void SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction, class UContextTargetComponent* TargetComponent = nullptr);
 
 private:
 

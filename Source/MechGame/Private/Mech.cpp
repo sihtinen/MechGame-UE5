@@ -13,6 +13,7 @@
 #include "AsyncTickFunctions.h"
 #include "Engine/AssetManager.h"
 #include "MechWeaponComponent.h"
+#include "EquipmentWidgetSourceInterface.h"
 
 AMech::AMech()
 {
@@ -344,13 +345,21 @@ void AMech::SetFixedFrameRate(uint8 FrameRateTarget)
 
 void AMech::RegisterWeaponComponent(UMechWeaponComponent* Component, const EEquipmentSlotType& SlotType)
 {
-	WeaponComponentsMap.Add(SlotType, Component);
+	RuntimeEquipmentComponentsMap.Add(SlotType, Component);
+}
+
+UMechEquipmentComponentRTBase* AMech::GetEquipmentRuntimeComponent(const EEquipmentSlotType& SlotType)
+{
+	if (RuntimeEquipmentComponentsMap.Contains(SlotType))
+		return RuntimeEquipmentComponentsMap[SlotType].Get();
+
+	return nullptr;
 }
 
 UMechWeaponComponent* AMech::GetWeaponComponent(const EEquipmentSlotType& SlotType)
 {
-	if (WeaponComponentsMap.Contains(SlotType))
-		return WeaponComponentsMap[SlotType].Get();
+	if (RuntimeEquipmentComponentsMap.Contains(SlotType))
+		return Cast<UMechWeaponComponent>(RuntimeEquipmentComponentsMap[SlotType].Get());
 
 	return nullptr;
 }

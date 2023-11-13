@@ -7,6 +7,7 @@
 #include "ProjectileAsset.h"
 #include "MechTargetingComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "ContextTargetComponent.h"
 #include "ProjectileSubsystem.h"
 
 UMechWeaponComponent::UMechWeaponComponent()
@@ -41,52 +42,130 @@ void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	bool _FiredLastTick = bFiredPreviousTick;
 	bFiredPreviousTick = false;
 
-	if (bInputActive == false || RemainingUseCount <= 0)
+	bool bShotPendingThisTick = (NumPendingShots > 0) || (bInputActive && RemainingUseCount > 0);
+
+	if (bShotPendingThisTick == false)
 		return;
 
-	double TimeNow = UGameplayStatics::GetTimeSeconds(this);
-	double TimeSincePreviouslyFired = TimeNow - TimePreviouslyFired;
-	double WaitTimeBetweenShots = 1.0 / SettingsAsset->UseRatePerSecond;
+	const double TimeNow = UGameplayStatics::GetTimeSeconds(this);
+	const double WaitTimeBetweenShots = 1.0 / SettingsAsset->UseRatePerSecond;
+	double TimeElapsedPreviouslyFired = TimeNow - TimePreviouslyFired;
 
-	if (TimeSincePreviouslyFired < WaitTimeBetweenShots)
-		return;
+	if (SettingsAsset->bBurstFire)
+	{
+		if (NumPendingShots > 0)
+		{
+			if (TimeElapsedPreviouslyFired < WaitTimeBetweenShots)
+				return;
+		}
+		else
+		{
+			if (TimeElapsedPreviouslyFired < SettingsAsset->BurstCooldownTime)
+				return;
+
+			NumPendingShots = SettingsAsset->BurstNumShots;
+
+			if (NumPendingShots <= 0)
+				NumPendingShots = 1;
+
+			TimeElapsedPreviouslyFired = WaitTimeBetweenShots;
+		}
+	}
+	else
+	{
+		if (TimeElapsedPreviouslyFired < WaitTimeBetweenShots)
+			return;
+
+		NumPendingShots = 1;
+	}
 
 	bFiredPreviousTick = true;
 	TimePreviouslyFired = TimeNow;
 
+	Shoot(TimeElapsedPreviouslyFired, WaitTimeBetweenShots);
+}
+
+void UMechWeaponComponent::Shoot(const double& TimeElapsedPreviouslyFired, const double& WaitTimeBetweenShots)
+{
 	UWorld* World = GetWorld();
 
 	if (World == nullptr)
+	{
+		NumPendingShots = 0;
 		return;
+	}
 
 	UProjectileSubsystem* ProjectileSubsystem = World->GetSubsystem<UProjectileSubsystem>();
 
 	if (ProjectileSubsystem == nullptr)
+	{
+		NumPendingShots = 0;
 		return;
+	}
 
 	FVector ProjectileSpawnLocation = GetOwner()->GetActorLocation();
 	FVector ShootDirection = GetShootDirection(ProjectileSpawnLocation);
+	float RemainingTime = TimeElapsedPreviouslyFired;
+	int32 NumSpawned = 0;
+	int32 PreviousUseCount = RemainingUseCount;
 
-	int NewProjectilesCount = (_FiredLastTick ? FMath::Floor(1 + DeltaTime / WaitTimeBetweenShots) : 1);
+	FTargetingOption BestTarget = Mech->TargetingComponent->GetBestTargetingOption();
+	UContextTargetComponent* TargetComponent = (BestTarget.IsValid ? BestTarget.ContextTargetComponent.Get() : nullptr);
 
-	for (int32 i = 0; i < NewProjectilesCount; i++)
+	while (RemainingTime >= WaitTimeBetweenShots)
 	{
+		RemainingTime -= WaitTimeBetweenShots;
+
+		if (NumPendingShots <= 0 || RemainingUseCount <= 0)
+		{
+			NumPendingShots = 0;
+			break;
+		}
+
 		FVector InstanceSpawnLocation = ProjectileSpawnLocation;
 
-		if (i > 0)
-			InstanceSpawnLocation += DeltaTime * SettingsAsset->ProjectileAsset->InitialSpeed * ShootDirection;
+		if (NumSpawned > 0)
+			InstanceSpawnLocation += (NumSpawned * WaitTimeBetweenShots) * SettingsAsset->ProjectileAsset->InitialSpeed * ShootDirection;
 
-		ProjectileSubsystem->SpawnProjectile(Mech.Get(), SettingsAsset->ProjectileAsset, InstanceSpawnLocation, ShootDirection);
+		ProjectileSubsystem->SpawnProjectile(
+			Mech.Get(), 
+			SettingsAsset->ProjectileAsset, 
+			InstanceSpawnLocation, 
+			ShootDirection, 
+			TargetComponent);
 
 		RemainingUseCount--;
-
-		Execute_OnUseCountUpdated(this, RemainingUseCount);
+		NumPendingShots--;
+		NumSpawned++;
 	}
+
+	OnUseCountUpdated.Broadcast(RemainingUseCount, PreviousUseCount);
 }
 
 bool UMechWeaponComponent::IsAiming()
 {
-	return bInputActive;
+	return bInputActive || (NumPendingShots > 0);
+}
+
+FName UMechWeaponComponent::GetDisplayName()
+{
+	if (SettingsAsset.IsValid())
+		return SettingsAsset->DisplayName;
+
+	return FName();
+}
+
+int32 UMechWeaponComponent::GetMaxUseCount()
+{
+	if (SettingsAsset.IsValid())
+		return SettingsAsset->UseCount;
+
+	return 0;
+}
+
+int32 UMechWeaponComponent::GetRemainingUseCount()
+{
+	return RemainingUseCount;
 }
 
 void UMechWeaponComponent::OnInputSlotStateUpdated(const EEquipmentSlotType& SlotType, bool IsPressed)
@@ -114,25 +193,4 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 	}
 
 	return Mech->GetActorForwardVector();
-}
-
-const FName UMechWeaponComponent::GetDisplayName_Implementation()
-{
-	if (SettingsAsset.IsValid() == false)
-		return GetFName();
-
-	return SettingsAsset->DisplayName;
-}
-
-int32 UMechWeaponComponent::GetMaxUseCount_Implementation()
-{
-	if (SettingsAsset.IsValid() == false)
-		return 0;
-
-	return SettingsAsset->UseCount;
-}
-
-int32 UMechWeaponComponent::GetRemainingUseCount_Implementation()
-{
-	return RemainingUseCount;
 }

@@ -7,7 +7,7 @@
 
 UContextTargetComponent::UContextTargetComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	bWantsInitializeComponent = true;
 }
 
@@ -39,11 +39,6 @@ void UContextTargetComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 			ContextSubsystem->UnregisterContextTargetComponent(this);
 		}
 	}
-}
-
-FVector UContextTargetComponent::GetWorldLocation()
-{
-	return GetOwner()->GetActorLocation();
 }
 
 void UContextTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

@@ -16,7 +16,7 @@ FTargetingOption::FTargetingOption()
 FVector FTargetingOption::GetLocation()
 {
 	if (ContextTargetComponent.IsValid())
-		return ContextTargetComponent->GetWorldLocation();
+		return ContextTargetComponent->GetComponentLocation();
 
 	return FVector();
 }
@@ -24,7 +24,7 @@ FVector FTargetingOption::GetLocation()
 FVector FTargetingOption::GetVelocity()
 {
 	if (ContextTargetComponent.IsValid())
-		return ContextTargetComponent->GetOwner()->GetVelocity();
+		return ContextTargetComponent->GetComponentVelocity();
 
 	return FVector();
 }

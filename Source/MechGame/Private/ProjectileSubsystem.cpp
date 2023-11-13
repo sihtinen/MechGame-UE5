@@ -8,6 +8,7 @@
 #include "PooledActor.h"
 #include "Engine/World.h"
 #include "ActorPoolSubsystem.h"
+#include "ContextTargetComponent.h"
 #include "ActorPool.h"
 
 void UProjectileSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -27,23 +28,27 @@ void UProjectileSubsystem::Tick(float DeltaTime)
 
 	for (int32 i = ActiveProjectilesCount; i --> 0;)
 	{
-		bool bProjectileAlive = UpdateProjectile(ActiveProjectiles[i], DeltaTime);
+		FProjectileState& Projectile = ActiveProjectiles[i];
+
+		bool bProjectileAlive = UpdateProjectile(Projectile, DeltaTime);
 
 		if (bProjectileAlive == false)
 		{
-			if (ActiveProjectiles[i].VisualActor.IsValid())
+			if (Projectile.VisualActor.IsValid())
 			{
-				ActiveProjectiles[i].VisualActor->Deactivate();
-				ActiveProjectiles[i].VisualActor->ReturnToPool();
-				ActiveProjectiles[i].VisualActor = nullptr;
+				Projectile.VisualActor->Deactivate();
+				Projectile.VisualActor->ReturnToPool();
+				Projectile.VisualActor = nullptr;
 			}
+
+			Projectile.TargetComponent = nullptr;
 
 			ActiveProjectiles.RemoveAt(i);
 		}
 	}
 }
 
-void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction)
+void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction, UContextTargetComponent* TargetComponent)
 {
 	if (SourceActor == nullptr)
 	{
@@ -61,6 +66,7 @@ void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset
 	NewProjectile.Location = Location;
 	NewProjectile.ForwardDirection = Direction;
 	NewProjectile.Velocity = ProjectileAsset->InitialSpeed * Direction;
+	NewProjectile.TargetComponent = TargetComponent;
 
 	InitializeProjectileVisualActor(ProjectileAsset, NewProjectile);
 

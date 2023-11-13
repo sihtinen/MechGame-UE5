@@ -20,6 +20,15 @@ public:
 	float UseRatePerSecond = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	bool bBurstFire = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	int32 BurstNumShots = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	float BurstCooldownTime = 0.8f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
 	TObjectPtr<class UProjectileAsset> ProjectileAsset;
 
 	void SetupMechRuntime(class AMech* Mech, const EEquipmentSlotType& Slot) override;

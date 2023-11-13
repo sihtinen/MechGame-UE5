@@ -4,12 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "MechEquipmentComponentRTBase.h"
 #include "MechDataStructures.h"
 #include "EquipmentWidgetSourceInterface.h"
 #include "MechWeaponComponent.generated.h"
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class MECHGAME_API UMechWeaponComponent : public UActorComponent, public IEquipmentWidgetSourceInterface
+class MECHGAME_API UMechWeaponComponent : public UMechEquipmentComponentRTBase
 {
 	GENERATED_BODY()
 
@@ -20,9 +21,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly)
 	bool bInputActive = false;
-
-	UPROPERTY(BlueprintReadOnly)
-	EEquipmentSlotType Slot = EEquipmentSlotType::MAX;
 
 public:	
 
@@ -35,24 +33,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAiming();
 
-//IEquipmentWidgetSourceInterface implementation
-public:
+	FName GetDisplayName() override;
 
-	UFUNCTION()
-	const FName GetDisplayName_Implementation() override;
+	int32 GetMaxUseCount() override;
 
-	UFUNCTION()
-	int32 GetMaxUseCount_Implementation() override;
-
-	UFUNCTION()
-	int32 GetRemainingUseCount_Implementation() override;
-
-protected:
-
-	UPROPERTY()
-	TWeakObjectPtr<class AMech> Mech;
-
-	int32 RemainingUseCount;
+	int32 GetRemainingUseCount() override;
 
 protected:
 
@@ -63,9 +48,13 @@ protected:
 
 	FVector GetShootDirection(const FVector& ShootLocation);
 
+	void Shoot(const double& TimeElapsedPreviouslyFired, const double& WaitTimeBetweenShots);
+
 private:
 
 	bool bFiredPreviousTick = false;
 
 	double TimePreviouslyFired;
+
+	int32 NumPendingShots = 0;
 };

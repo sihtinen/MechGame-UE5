@@ -17,6 +17,7 @@ class UMechEquipmentAsset;
 class UPIDAsset;
 class UCapsuleComponent;
 class UAnimBlueprint;
+class UMechEquipmentComponentRTBase;
 class UMechWeaponComponent;
 class UMechTargetingComponent;
 
@@ -112,6 +113,9 @@ public:
 	void RegisterWeaponComponent(UMechWeaponComponent* Component, const EEquipmentSlotType& SlotType);
 
 	UFUNCTION(BlueprintCallable)
+	UMechEquipmentComponentRTBase* GetEquipmentRuntimeComponent(const EEquipmentSlotType& SlotType);
+
+	UFUNCTION(BlueprintCallable)
 	UMechWeaponComponent* GetWeaponComponent(const EEquipmentSlotType& SlotType);
 
 	UFUNCTION(BlueprintCallable)
@@ -129,7 +133,7 @@ protected:
 	TWeakObjectPtr<UCapsuleComponent> CollisionCapsule;
 
 	UPROPERTY()
-	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechWeaponComponent>> WeaponComponentsMap;
+	TMap<EEquipmentSlotType, TWeakObjectPtr<UMechEquipmentComponentRTBase>> RuntimeEquipmentComponentsMap;
 
 	UPROPERTY()
 	TMap<EEquipmentSlotType, bool> SlotInputStates;

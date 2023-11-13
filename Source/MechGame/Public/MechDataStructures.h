@@ -115,6 +115,9 @@ public:
     TWeakObjectPtr<class APooledActor> VisualActor;
 
     UPROPERTY(BlueprintReadOnly)
+    TWeakObjectPtr<class UContextTargetComponent> TargetComponent;
+
+    UPROPERTY(BlueprintReadOnly)
     TWeakObjectPtr<UProjectileAsset> ProjectileAsset;
 
 public:
