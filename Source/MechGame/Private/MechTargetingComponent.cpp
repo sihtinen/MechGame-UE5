@@ -241,7 +241,7 @@ void UMechTargetingComponent::UpdateWorldTargetLocation()
 
 		PlayerController->DeprojectScreenPositionToWorld(ReticleScreenLocation.X, ReticleScreenLocation.Y, ReticleWorldLocation, ReticleWorldDirection);
 
-		FVector TraceEnd = (ReticleWorldLocation + 100000 * ReticleWorldDirection);
+		FVector TraceEnd = (ReticleWorldLocation + 1000 * ReticleWorldDirection);
 		ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
 		bool TraceAgainstComplexGeo = false;
 		bool IgnoreSelf = true;

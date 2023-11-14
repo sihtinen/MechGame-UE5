@@ -28,6 +28,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction, class UContextTargetComponent* TargetComponent = nullptr);
 
+	UFUNCTION(BlueprintCallable)
+	static void CalculateInterceptDirection(
+		const FVector& SourceLocation,
+		const FVector& SourceVelocity,
+		const FVector& TargetLocation,
+		const FVector& TargetVelocity,
+		const float ProjectileSpeed,
+		const float DragCoefficient,
+		const float Gravity,
+		bool& bResultFound,
+		FVector& ResultDirection);
+
 private:
 
 	FHitResult TraceHitResult;

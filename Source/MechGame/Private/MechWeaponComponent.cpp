@@ -181,16 +181,51 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 	if (Mech->TargetingComponent->ValidTargetingOptions.Num() > 0)
 	{
 		FTargetingOption BestTarget = Mech->TargetingComponent->GetBestTargetingOption();
-		FVector ToTarget = (BestTarget.GetLocation() - ShootLocation);
-		return (ToTarget.GetUnsafeNormal());
+
+		bool bInterceptDirectionFound = false;
+		FVector InterceptDirection;
+
+		UProjectileSubsystem::CalculateInterceptDirection(
+			ShootLocation,
+			Mech->GetVelocity(),
+			BestTarget.GetLocation(),
+			BestTarget.GetVelocity(),
+			SettingsAsset->ProjectileAsset->InitialSpeed,
+			SettingsAsset->ProjectileAsset->DragCoefficient,
+			SettingsAsset->ProjectileAsset->GravityForce,
+			bInterceptDirectionFound,
+			InterceptDirection);
+
+		if (bInterceptDirectionFound)
+			return InterceptDirection;
+		else
+			return (BestTarget.GetLocation() - ShootLocation).GetSafeNormal();
 	}
 
 	if (Mech->IsPlayerControlled())
 	{
 		const FVector& WorldTargetLocation = Mech->TargetingComponent->WorldTargetLocation;
-		FVector ToWorldTarget = (WorldTargetLocation - ShootLocation);
-		return (ToWorldTarget.GetUnsafeNormal());
+
+		bool bInterceptDirectionFound = false;
+		FVector InterceptDirection;
+
+		UProjectileSubsystem::CalculateInterceptDirection(
+			ShootLocation,
+			Mech->GetVelocity(),
+			WorldTargetLocation,
+			FVector::ZeroVector,
+			SettingsAsset->ProjectileAsset->InitialSpeed,
+			SettingsAsset->ProjectileAsset->DragCoefficient,
+			SettingsAsset->ProjectileAsset->GravityForce,
+			bInterceptDirectionFound,
+			InterceptDirection);
+
+		if (bInterceptDirectionFound)
+			return InterceptDirection;
+		else
+			return (WorldTargetLocation - ShootLocation).GetSafeNormal();
 	}
 
-	return Mech->GetActorForwardVector();
+	FVector ResultDirection = Mech->GetActorForwardVector();
+	return ResultDirection;
 }

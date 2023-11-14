@@ -20,10 +20,7 @@ public:
 	float InitialSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float HorizontalDrag;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	float VerticalDrag;
+	float DragCoefficient;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float GravityForce;

@@ -65,13 +65,72 @@ void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset
 	FProjectileState NewProjectile = FProjectileState(SourceActor, ProjectileAsset);
 	NewProjectile.Location = Location;
 	NewProjectile.ForwardDirection = Direction;
-	NewProjectile.Velocity = ProjectileAsset->InitialSpeed * Direction;
+	NewProjectile.Velocity = SourceActor->GetVelocity() + ProjectileAsset->InitialSpeed * Direction;
 	NewProjectile.TargetComponent = TargetComponent;
 
 	InitializeProjectileVisualActor(ProjectileAsset, NewProjectile);
 
 	ActiveProjectiles.Add(NewProjectile);
 }
+
+void UProjectileSubsystem::CalculateInterceptDirection(
+	const FVector& SourceLocation,
+	const FVector& SourceVelocity,
+	const FVector& TargetLocation,
+	const FVector& TargetVelocity,
+	const float InitialProjectileSpeed,
+	const float DragCoefficient,
+	const float Gravity,
+	bool& bResultFound,
+	FVector& ResultDirection)
+{
+	FVector RelativeLocation = TargetLocation - SourceLocation;
+	FVector RelativeVelocity = TargetVelocity - SourceVelocity;
+	FVector GravityVector(0.0f, 0.0f, -Gravity);
+
+	// Calculate time of flight using the quadratic formula
+	float a = FVector::DotProduct(RelativeVelocity, RelativeVelocity) - (InitialProjectileSpeed * InitialProjectileSpeed);
+	float b = 2 * FVector::DotProduct(RelativeVelocity, RelativeLocation);
+	float c = FVector::DotProduct(RelativeLocation, RelativeLocation);
+
+	float Discriminant = (b * b) - 4 * a * c;
+
+	if (Discriminant < 0)
+	{
+		// No real solution, target is out of range
+		bResultFound = false;
+		return;
+	}
+
+	float SqrtDiscriminant = FMath::Sqrt(Discriminant);
+
+	// Calculate the two possible times of flight
+	float Time1 = (-b + SqrtDiscriminant) / (2 * a);
+	float Time2 = (-b - SqrtDiscriminant) / (2 * a);
+
+	// Choose the positive time (future intersection point)
+	float TimeOfFlight = FMath::Max(Time1, Time2);
+	float TimeOfFlightSquared = TimeOfFlight * TimeOfFlight;
+
+	// Calculate the predicted target position at the time of flight
+	FVector PredictedTargetPosition = TargetLocation + TimeOfFlight * TargetVelocity + TimeOfFlight * RelativeVelocity;
+
+	// Calculate the relative position at the time of flight
+	FVector RelativePredictedTargetPosition = PredictedTargetPosition - SourceLocation;
+
+	// Apply counter gravity
+	RelativePredictedTargetPosition -= 0.5 * TimeOfFlightSquared * GravityVector;
+
+	// Calculate the drag force
+	FVector DragForce = DragCoefficient * TimeOfFlightSquared * RelativeVelocity - DragCoefficient * TimeOfFlightSquared * GravityVector;
+
+	// Calculate the launch direction (normalized)
+	FVector launchDirection = (RelativePredictedTargetPosition + DragForce).GetSafeNormal();
+
+	bResultFound = true;
+	ResultDirection = launchDirection;
+}
+
 
 void UProjectileSubsystem::InitializeProjectileVisualActor(UProjectileAsset* ProjectileAsset, FProjectileState& NewProjectile)
 {
@@ -98,7 +157,14 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 
 	const FVector PrevLocation = Projectile.Location;
 
+	Projectile.Velocity.Z -= DeltaTime * Settings->GravityForce;
+
+	FVector DragForce = -(Settings->DragCoefficient) * Projectile.Velocity.Size() * Projectile.Velocity.GetSafeNormal();
+	Projectile.Velocity += DeltaTime * DragForce;
+
 	Projectile.Location += DeltaTime * Projectile.Velocity;
+
+	bDrawTraceDebug = true;
 
 	const ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
 	const bool TraceAgainstComplexGeo = false;
