@@ -39,6 +39,9 @@ void UMechWeaponComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	if (Mech.IsValid() == false || SettingsAsset.IsValid() == false)
 		return;
 
+	// regain accuracy
+	SettingsAsset->AccuracyConfig.UpdateTick(Accuracy, DeltaTime, Mech->GetVelocity().Length());
+
 	bool _FiredLastTick = bFiredPreviousTick;
 	bFiredPreviousTick = false;
 
@@ -104,7 +107,11 @@ void UMechWeaponComponent::Shoot(const double& TimeElapsedPreviouslyFired, const
 	}
 
 	FVector ProjectileSpawnLocation = GetOwner()->GetActorLocation();
+
 	FVector ShootDirection = GetShootDirection(ProjectileSpawnLocation);
+
+	SettingsAsset->InaccuracyNoise.ApplyToDirection(ShootDirection, Accuracy, Mech->GetGameTimeSinceCreation());
+
 	float RemainingTime = TimeElapsedPreviouslyFired;
 	int32 NumSpawned = 0;
 	int32 PreviousUseCount = RemainingUseCount;
@@ -137,6 +144,8 @@ void UMechWeaponComponent::Shoot(const double& TimeElapsedPreviouslyFired, const
 		RemainingUseCount--;
 		NumPendingShots--;
 		NumSpawned++;
+
+		SettingsAsset->AccuracyConfig.ApplyUsageLoss(Accuracy);
 	}
 
 	OnUseCountUpdated.Broadcast(RemainingUseCount, PreviousUseCount);

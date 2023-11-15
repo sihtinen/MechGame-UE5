@@ -126,3 +126,54 @@ public:
     FProjectileState(AActor* OwnerActor, UProjectileAsset* Asset);
 
 };
+
+USTRUCT(BlueprintType)
+struct FAccuracyConfig
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float LossPerUse = 0.2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float LossOverVelocityRate = 0.2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float MaxVelocity = 0.2;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    float BaseRegainSpeed = 0.5;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FRuntimeFloatCurve RegainRateCurve = FRuntimeFloatCurve();
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FRuntimeFloatCurve LossOverMaxVelocityCurve = FRuntimeFloatCurve();
+
+public:
+
+    void UpdateTick(float& Accuracy, const float& DeltaTime, const float& VelocityMagnitude);
+
+    void ApplyUsageLoss(float& Accuracy);
+};
+
+USTRUCT(BlueprintType)
+struct FWeaponInaccuracyNoise
+{
+    GENERATED_BODY()
+
+public:
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector NoiseSpeed;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    FVector NoiseScale;
+
+public:
+
+    void ApplyToDirection(FVector& Direction, const float Accuracy, const float GameTime);
+
+};

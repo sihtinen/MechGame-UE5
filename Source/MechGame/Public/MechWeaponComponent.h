@@ -39,6 +39,11 @@ public:
 
 	int32 GetRemainingUseCount() override;
 
+	bool IsAccuracyVisibleInWidget() override
+	{
+		return true;
+	}
+
 protected:
 
 	virtual void BeginPlay() override;

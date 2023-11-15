@@ -37,12 +37,26 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual int32 GetRemainingUseCount();
 
+	UFUNCTION(BlueprintCallable)
+	virtual bool IsAccuracyVisibleInWidget()
+	{
+		return false;
+	}
+
+	UFUNCTION(BlueprintCallable)
+	float GetAccuracy()
+	{
+		return Accuracy;
+	}
+
 protected:
 
 	UPROPERTY()
 	TWeakObjectPtr<class AMech> Mech;
 
 	int32 RemainingUseCount;
+
+	float Accuracy;
 
 protected:
 

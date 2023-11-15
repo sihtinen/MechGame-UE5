@@ -29,6 +29,12 @@ public:
 	float BurstCooldownTime = 0.8f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FAccuracyConfig AccuracyConfig = FAccuracyConfig();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FWeaponInaccuracyNoise InaccuracyNoise = FWeaponInaccuracyNoise();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
 	TObjectPtr<class UProjectileAsset> ProjectileAsset;
 
 	void SetupMechRuntime(class AMech* Mech, const EEquipmentSlotType& Slot) override;

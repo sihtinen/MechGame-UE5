@@ -113,22 +113,25 @@ void UProjectileSubsystem::CalculateInterceptDirection(
 	float TimeOfFlightSquared = TimeOfFlight * TimeOfFlight;
 
 	// Calculate the predicted target position at the time of flight
-	FVector PredictedTargetPosition = TargetLocation + TimeOfFlight * TargetVelocity + TimeOfFlight * RelativeVelocity;
-
-	// Calculate the relative position at the time of flight
-	FVector RelativePredictedTargetPosition = PredictedTargetPosition - SourceLocation;
+	FVector PredictedTargetPosition = TargetLocation 
+		+ TimeOfFlight * TargetVelocity 
+		+ TimeOfFlight * RelativeVelocity;
 
 	// Apply counter gravity
-	RelativePredictedTargetPosition -= 0.5 * TimeOfFlightSquared * GravityVector;
+	PredictedTargetPosition -= 0.5 * TimeOfFlightSquared * GravityVector;
 
 	// Calculate the drag force
-	FVector DragForce = DragCoefficient * TimeOfFlightSquared * RelativeVelocity - DragCoefficient * TimeOfFlightSquared * GravityVector;
+	FVector DragForce = -DragCoefficient * TimeOfFlightSquared * RelativeVelocity;
+	DragForce -= 0.5 * DragCoefficient * TimeOfFlightSquared * GravityVector;
 
-	// Calculate the launch direction (normalized)
-	FVector launchDirection = (RelativePredictedTargetPosition + DragForce).GetSafeNormal();
+	// Apply drag force to predicted target position
+	PredictedTargetPosition += DragForce;
+
+	// Calculate initial launch direction
+	FVector LaunchDirection = (PredictedTargetPosition - SourceLocation).GetSafeNormal();
 
 	bResultFound = true;
-	ResultDirection = launchDirection;
+	ResultDirection = LaunchDirection;
 }
 
 
