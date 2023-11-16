@@ -10,6 +10,7 @@
 #include "ActorPoolSubsystem.h"
 #include "ContextTargetComponent.h"
 #include "ActorPool.h"
+#include "DrawDebugHelpers.h"
 
 void UProjectileSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -153,7 +154,7 @@ void UProjectileSubsystem::InitializeProjectileVisualActor(UProjectileAsset* Pro
 
 bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const float& DeltaTime)
 {
-	const UProjectileAsset* Settings = Projectile.ProjectileAsset.Get();
+	UProjectileAsset* Settings = Projectile.ProjectileAsset.Get();
 
 	if (Settings == nullptr)
 		return false;
@@ -164,6 +165,42 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 
 	FVector DragForce = -(Settings->DragCoefficient) * Projectile.Velocity.Size() * Projectile.Velocity.GetSafeNormal();
 	Projectile.Velocity += DeltaTime * DragForce;
+
+	if (Settings->bEnableHoming && Projectile.TargetComponent.IsValid())
+	{
+		float LifeTimeNormalized = Projectile.AliveTime / Settings->LifeTime;
+		FVector VelocityNormalized = Projectile.Velocity.GetSafeNormal();
+
+		FVector DirectionToTarget = (Projectile.TargetComponent->GetComponentLocation() - Projectile.Location).GetSafeNormal();
+		float DirectionDot = FVector::DotProduct(VelocityNormalized, DirectionToTarget);
+
+		float ThrustRate = Settings->HomingMaxThrustForce * 
+			Settings->HomingThrustOverLife.GetRichCurve()->Eval(LifeTimeNormalized) * 
+			Settings->HomingThrustOverDirectionDot.GetRichCurve()->Eval(DirectionDot);
+
+		bool bInterceptDirectionFound = false;
+		FVector InterceptDirection = FVector::ZeroVector;
+		float VelocityLength = Projectile.Velocity.Length();
+
+		CalculateInterceptDirection(
+			Projectile.Location,
+			FVector::ZeroVector,
+			Projectile.TargetComponent->GetComponentLocation(),
+			Projectile.TargetComponent->GetComponentVelocity(),
+			VelocityLength + DeltaTime * ThrustRate,
+			Settings->DragCoefficient,
+			Settings->GravityForce,
+			bInterceptDirectionFound,
+			InterceptDirection);
+
+		FVector TargetDirection = (bInterceptDirectionFound ? InterceptDirection : DirectionToTarget);
+
+		float TurnRate = Settings->HomingMaxTurnRate * Settings->HomingTurnRateOverLife.GetRichCurve()->Eval(LifeTimeNormalized);
+		FVector NewVelocityDirection = FMath::VInterpNormalRotationTo(VelocityNormalized, TargetDirection, DeltaTime, TurnRate);
+		Projectile.Velocity = VelocityLength * NewVelocityDirection;
+
+		Projectile.Velocity += DeltaTime * ThrustRate * VelocityNormalized;
+	}
 
 	Projectile.Location += DeltaTime * Projectile.Velocity;
 

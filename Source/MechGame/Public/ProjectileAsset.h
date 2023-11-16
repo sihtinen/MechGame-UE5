@@ -31,6 +31,24 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float LifeTime;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	bool bEnableHoming = false;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	float HomingMaxTurnRate = 30.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FRuntimeFloatCurve HomingTurnRateOverLife = FRuntimeFloatCurve();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	float HomingMaxThrustForce = 500.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FRuntimeFloatCurve HomingThrustOverLife = FRuntimeFloatCurve();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FRuntimeFloatCurve HomingThrustOverDirectionDot = FRuntimeFloatCurve();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSubclassOf<class APooledActor> VisualActorSubclass;
 

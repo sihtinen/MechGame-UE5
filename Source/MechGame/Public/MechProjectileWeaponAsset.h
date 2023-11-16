@@ -29,6 +29,9 @@ public:
 	float BurstCooldownTime = 0.8f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);
+	FRotator FireDirectionRotationOffset = FRotator(0, 0, 0);
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly);
 	FAccuracyConfig AccuracyConfig = FAccuracyConfig();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly);

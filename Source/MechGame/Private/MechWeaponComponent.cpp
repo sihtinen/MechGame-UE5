@@ -108,10 +108,6 @@ void UMechWeaponComponent::Shoot(const double& TimeElapsedPreviouslyFired, const
 
 	FVector ProjectileSpawnLocation = GetOwner()->GetActorLocation();
 
-	FVector ShootDirection = GetShootDirection(ProjectileSpawnLocation);
-
-	SettingsAsset->InaccuracyNoise.ApplyToDirection(ShootDirection, Accuracy, Mech->GetGameTimeSinceCreation());
-
 	float RemainingTime = TimeElapsedPreviouslyFired;
 	int32 NumSpawned = 0;
 	int32 PreviousUseCount = RemainingUseCount;
@@ -130,6 +126,7 @@ void UMechWeaponComponent::Shoot(const double& TimeElapsedPreviouslyFired, const
 		}
 
 		FVector InstanceSpawnLocation = ProjectileSpawnLocation;
+		FVector ShootDirection = GetShootDirection(ProjectileSpawnLocation);
 
 		if (NumSpawned > 0)
 			InstanceSpawnLocation += (NumSpawned * WaitTimeBetweenShots) * SettingsAsset->ProjectileAsset->InitialSpeed * ShootDirection;
@@ -187,6 +184,8 @@ void UMechWeaponComponent::OnInputSlotStateUpdated(const EEquipmentSlotType& Slo
 
 FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 {
+	FVector ResultDirection = Mech->GetActorForwardVector();
+
 	if (Mech->TargetingComponent->ValidTargetingOptions.Num() > 0)
 	{
 		FTargetingOption BestTarget = Mech->TargetingComponent->GetBestTargetingOption();
@@ -206,12 +205,11 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 			InterceptDirection);
 
 		if (bInterceptDirectionFound)
-			return InterceptDirection;
+			ResultDirection = InterceptDirection;
 		else
-			return (BestTarget.GetLocation() - ShootLocation).GetSafeNormal();
+			ResultDirection = (BestTarget.GetLocation() - ShootLocation).GetSafeNormal();
 	}
-
-	if (Mech->IsPlayerControlled())
+	else if (Mech->IsPlayerControlled())
 	{
 		const FVector& WorldTargetLocation = Mech->TargetingComponent->WorldTargetLocation;
 
@@ -230,11 +228,17 @@ FVector UMechWeaponComponent::GetShootDirection(const FVector& ShootLocation)
 			InterceptDirection);
 
 		if (bInterceptDirectionFound)
-			return InterceptDirection;
+			ResultDirection = InterceptDirection;
 		else
-			return (WorldTargetLocation - ShootLocation).GetSafeNormal();
+			ResultDirection = (WorldTargetLocation - ShootLocation).GetSafeNormal();
 	}
 
-	FVector ResultDirection = Mech->GetActorForwardVector();
+	FTransform SpawnTransform = FTransform(ResultDirection.ToOrientationQuat(), ShootLocation);
+	ResultDirection = ResultDirection.RotateAngleAxis(SettingsAsset->FireDirectionRotationOffset.Pitch, SpawnTransform.GetUnitAxis(EAxis::Z));
+	ResultDirection = ResultDirection.RotateAngleAxis(SettingsAsset->FireDirectionRotationOffset.Yaw, SpawnTransform.GetUnitAxis(EAxis::X));
+	ResultDirection = ResultDirection.RotateAngleAxis(SettingsAsset->FireDirectionRotationOffset.Roll, SpawnTransform.GetUnitAxis(EAxis::Y));
+
+	SettingsAsset->InaccuracyNoise.ApplyToDirection(ResultDirection, Accuracy, Mech->GetGameTimeSinceCreation());
+
 	return ResultDirection;
 }
