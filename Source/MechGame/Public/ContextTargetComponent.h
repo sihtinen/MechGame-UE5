@@ -26,4 +26,15 @@ public:
 
 	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
+	UFUNCTION(BlueprintCallable)
+	FVector GetCalculatedVelocity()
+	{
+		return CalculatedVelocity;
+	}
+
+private:
+
+	FVector LocationPrevTick;
+
+	FVector CalculatedVelocity = FVector::ZeroVector;
 };

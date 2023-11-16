@@ -113,17 +113,19 @@ void UProjectileSubsystem::CalculateInterceptDirection(
 	float TimeOfFlight = FMath::Max(Time1, Time2);
 	float TimeOfFlightSquared = TimeOfFlight * TimeOfFlight;
 
+	float MagicMult = 0.5 * TimeOfFlightSquared;
+
 	// Calculate the predicted target position at the time of flight
 	FVector PredictedTargetPosition = TargetLocation 
-		+ TimeOfFlight * TargetVelocity 
+		+ MagicMult * TargetVelocity
 		+ TimeOfFlight * RelativeVelocity;
 
 	// Apply counter gravity
-	PredictedTargetPosition -= 0.5 * TimeOfFlightSquared * GravityVector;
+	PredictedTargetPosition -= MagicMult * GravityVector;
 
 	// Calculate the drag force
-	FVector DragForce = -DragCoefficient * TimeOfFlightSquared * RelativeVelocity;
-	DragForce -= 0.5 * DragCoefficient * TimeOfFlightSquared * GravityVector;
+	FVector DragForce = -DragCoefficient * MagicMult * RelativeVelocity;
+	DragForce -= DragCoefficient * MagicMult * GravityVector;
 
 	// Apply drag force to predicted target position
 	PredictedTargetPosition += DragForce;
@@ -169,37 +171,41 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 	if (Settings->bEnableHoming && Projectile.TargetComponent.IsValid())
 	{
 		float LifeTimeNormalized = Projectile.AliveTime / Settings->LifeTime;
+
 		FVector VelocityNormalized = Projectile.Velocity.GetSafeNormal();
+		float VelocityLength = Projectile.Velocity.Length();
 
 		FVector DirectionToTarget = (Projectile.TargetComponent->GetComponentLocation() - Projectile.Location).GetSafeNormal();
 		float DirectionDot = FVector::DotProduct(VelocityNormalized, DirectionToTarget);
 
-		float ThrustRate = Settings->HomingMaxThrustForce * 
-			Settings->HomingThrustOverLife.GetRichCurve()->Eval(LifeTimeNormalized) * 
-			Settings->HomingThrustOverDirectionDot.GetRichCurve()->Eval(DirectionDot);
+		float ThrustRate = Settings->HomingMaxThrustForce
+			* Settings->HomingThrustOverLife.GetRichCurve()->Eval(LifeTimeNormalized) 
+			* Settings->HomingThrustOverDirectionDot.GetRichCurve()->Eval(DirectionDot);
 
 		bool bInterceptDirectionFound = false;
 		FVector InterceptDirection = FVector::ZeroVector;
-		float VelocityLength = Projectile.Velocity.Length();
 
 		CalculateInterceptDirection(
 			Projectile.Location,
 			FVector::ZeroVector,
 			Projectile.TargetComponent->GetComponentLocation(),
-			Projectile.TargetComponent->GetComponentVelocity(),
+			Projectile.TargetComponent->GetCalculatedVelocity(),
 			VelocityLength + DeltaTime * ThrustRate,
 			Settings->DragCoefficient,
 			Settings->GravityForce,
 			bInterceptDirectionFound,
 			InterceptDirection);
 
-		FVector TargetDirection = (bInterceptDirectionFound ? InterceptDirection : DirectionToTarget);
+		float InterceptDirectionDot = FMath::Clamp(FVector::DotProduct(DirectionToTarget, InterceptDirection), 0.0f, 1.0f);
+
+		FVector TargetDirection = (bInterceptDirectionFound ? 
+			FVector::SlerpNormals(DirectionToTarget, InterceptDirection, InterceptDirectionDot) : 
+			DirectionToTarget);
 
 		float TurnRate = Settings->HomingMaxTurnRate * Settings->HomingTurnRateOverLife.GetRichCurve()->Eval(LifeTimeNormalized);
 		FVector NewVelocityDirection = FMath::VInterpNormalRotationTo(VelocityNormalized, TargetDirection, DeltaTime, TurnRate);
-		Projectile.Velocity = VelocityLength * NewVelocityDirection;
 
-		Projectile.Velocity += DeltaTime * ThrustRate * VelocityNormalized;
+		Projectile.Velocity = (VelocityLength + DeltaTime * ThrustRate) * NewVelocityDirection;
 	}
 
 	Projectile.Location += DeltaTime * Projectile.Velocity;

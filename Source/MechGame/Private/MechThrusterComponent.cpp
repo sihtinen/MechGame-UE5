@@ -104,7 +104,7 @@ void UMechThrusterComponent::UpdateDash(float DeltaTime)
 		bDashInitialized = true;
 
 		// perform vertical velocity cancel
-		FVector Velocity = RootComponent->GetComponentVelocity();
+		FVector Velocity = Mech->GetVelocity();
 		Velocity.Z *= (1.0f - ThrusterAsset->DashVerticalVelocityCancelAmount);
 		RootComponent->SetPhysicsLinearVelocity(Velocity, false, NAME_None);
 

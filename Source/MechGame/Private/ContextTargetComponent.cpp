@@ -24,6 +24,8 @@ void UContextTargetComponent::InitializeComponent()
 			ContextSubsystem->RegisterContextTargetComponent(this);
 		}
 	}
+
+	LocationPrevTick = GetComponentLocation();
 }
 
 void UContextTargetComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
@@ -44,4 +46,10 @@ void UContextTargetComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
 void UContextTargetComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+	FVector CurrentLocation = GetComponentLocation();
+
+	CalculatedVelocity = (CurrentLocation - LocationPrevTick) / DeltaTime;
+
+	LocationPrevTick = CurrentLocation;
 }
