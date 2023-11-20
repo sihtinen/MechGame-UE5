@@ -98,22 +98,14 @@ void UMechTargetingComponent::FilterTargetingOptions_LineOfSight()
 		TraceIgnoredActors.Add(OwnerActor);
 		TraceIgnoredActors.Add(TargetActor);
 
-		FVector TraceEnd = TargetActor->GetActorLocation();
-		ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
-		bool TraceAgainstComplexGeo = false;
-		bool IgnoreSelf = true;
-		EDrawDebugTrace::Type DrawDebugType = EDrawDebugTrace::ForOneFrame;
+		FCollisionQueryParams CollisionQueryParams = FCollisionQueryParams();
+		CollisionQueryParams.AddIgnoredActors(TraceIgnoredActors);
 
-		bool bTraceHitFound = UKismetSystemLibrary::LineTraceSingle(
-			this,
+		bool bTraceHitFound = GetWorld()->LineTraceTestByChannel(
 			TraceStartLocation,
-			TraceEnd,
-			TraceChannel,
-			TraceAgainstComplexGeo,
-			TraceIgnoredActors,
-			DrawDebugType,
-			TraceHitResult,
-			IgnoreSelf);
+			TargetActor->GetActorLocation(),
+			ECollisionChannel::ECC_PhysicsBody,
+			CollisionQueryParams);
 
 		TraceIgnoredActors.Reset();
 

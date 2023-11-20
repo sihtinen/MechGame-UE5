@@ -210,8 +210,6 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 
 	Projectile.Location += DeltaTime * Projectile.Velocity;
 
-	bDrawTraceDebug = true;
-
 	const ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
 	const bool TraceAgainstComplexGeo = false;
 	const bool IgnoreSelf = true;
