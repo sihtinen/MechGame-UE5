@@ -98,7 +98,7 @@ void UMechTargetingComponent::FilterTargetingOptions_LineOfSight()
 		TraceIgnoredActors.Add(OwnerActor);
 		TraceIgnoredActors.Add(TargetActor);
 
-		FCollisionQueryParams CollisionQueryParams = FCollisionQueryParams();
+		FCollisionQueryParams CollisionQueryParams = FCollisionQueryParams::DefaultQueryParam;
 		CollisionQueryParams.AddIgnoredActors(TraceIgnoredActors);
 
 		bool bTraceHitFound = GetWorld()->LineTraceTestByChannel(

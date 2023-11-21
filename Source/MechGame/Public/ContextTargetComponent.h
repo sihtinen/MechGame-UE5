@@ -16,6 +16,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (Bitmask, BitmaskEnum = EContextLayers))
 	int32 ContextLayerFlags = 0;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bReturnCalculatedVelocity = true;
+
 public:
 
 	UContextTargetComponent();
@@ -29,7 +32,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FVector GetCalculatedVelocity()
 	{
-		return CalculatedVelocity;
+		if (bReturnCalculatedVelocity)
+			return CalculatedVelocity;
+		else
+			return GetOwner()->GetVelocity();
 	}
 
 private:

@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "MechDataStructures.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Turret.generated.h"
 
 class UContextTargetComponent;
@@ -37,7 +38,7 @@ protected:
 	UPROPERTY()
 	TArray<TWeakObjectPtr<UContextTargetComponent>> ValidTargetsArray;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TWeakObjectPtr<UContextTargetComponent> CurrentTarget;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -52,6 +53,19 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float RotationLimitYaw = 60.0f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float RotationSpringStiffness = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float RotationSpringCriticalDamping = 0.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FRuntimeFloatCurve ScoreOverDistanceCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FRuntimeFloatCurve ScoreOverDefaultDirectionDot;
+
+	UPROPERTY(BlueprintReadWrite)
 	FRotator DefaultRotator;
 
 	FHitResult LineTraceHitResult;
@@ -62,6 +76,17 @@ protected:
 	UPROPERTY()
 	TArray<AActor*> TraceIgnoredActors;
 
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<class USceneComponent> RotationRootComponent;
+
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<class USceneComponent> ProjectileSpawnTransformComponent;
+
+	UPROPERTY(BlueprintReadWrite)
+	TWeakObjectPtr<class UContextTargetComponent> MyContextTargetComponent;
+
+	FQuaternionSpringState RotationSpringState = FQuaternionSpringState();
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -71,5 +96,7 @@ protected:
 	bool IsTargetValid(const TWeakObjectPtr<UContextTargetComponent>& Target);
 
 	float CalculateTargetScore(const TWeakObjectPtr<UContextTargetComponent>& Target);
+
+	void UpdateRotation(float DeltaTime);
 
 };
