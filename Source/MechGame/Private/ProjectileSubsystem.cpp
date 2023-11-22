@@ -49,7 +49,13 @@ void UProjectileSubsystem::Tick(float DeltaTime)
 	}
 }
 
-void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction, UContextTargetComponent* TargetComponent)
+void UProjectileSubsystem::SpawnProjectile(
+	AActor* SourceActor, 
+	UProjectileAsset* ProjectileAsset, 
+	const FVector& Location, 
+	const FVector& Direction, 
+	UContextTargetComponent* TargetComponent,
+	bool DrawDebug)
 {
 	if (SourceActor == nullptr)
 	{
@@ -64,6 +70,7 @@ void UProjectileSubsystem::SpawnProjectile(AActor* SourceActor, UProjectileAsset
 	}
 
 	FProjectileState NewProjectile = FProjectileState(SourceActor, ProjectileAsset);
+	NewProjectile.bDrawDebug = DrawDebug;
 	NewProjectile.Location = Location;
 	NewProjectile.ForwardDirection = Direction;
 	NewProjectile.Velocity = SourceActor->GetVelocity() + ProjectileAsset->InitialSpeed * Direction;
@@ -213,7 +220,7 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 	const ETraceTypeQuery TraceChannel = UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_PhysicsBody);
 	const bool TraceAgainstComplexGeo = false;
 	const bool IgnoreSelf = true;
-	const EDrawDebugTrace::Type DrawDebugType = (bDrawTraceDebug ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None);
+	const EDrawDebugTrace::Type DrawDebugType = (Projectile.bDrawDebug ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None);
 
 	TraceIgnoredActors[0] = Projectile.OwnerActor.Get();
 

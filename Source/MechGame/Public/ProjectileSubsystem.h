@@ -14,8 +14,6 @@ class MECHGAME_API UProjectileSubsystem : public UTickableWorldSubsystem
 	
 public:
 
-	bool bDrawTraceDebug = false;
-
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 
 	void Tick(float DeltaTime) override;
@@ -26,7 +24,13 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable)
-	void SpawnProjectile(AActor* SourceActor, UProjectileAsset* ProjectileAsset, const FVector& Location, const FVector& Direction, class UContextTargetComponent* TargetComponent = nullptr);
+	void SpawnProjectile(
+		AActor* SourceActor, 
+		UProjectileAsset* ProjectileAsset, 
+		const FVector& Location, 
+		const FVector& Direction, 
+		class UContextTargetComponent* TargetComponent = nullptr,
+		bool DrawDebug = false);
 
 	UFUNCTION(BlueprintCallable)
 	static void CalculateInterceptDirection(

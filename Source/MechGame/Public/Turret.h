@@ -33,7 +33,10 @@ protected:
 	double MaxTargetingDistance = 1000;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	FRuntimeFloatCurve PredictionOverDistanceCurve;
+	FRuntimeFloatCurve AccuracyOverDistanceCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	float ValidShootDirectionDot = 0.7f;
 
 	UPROPERTY()
 	TArray<TWeakObjectPtr<UContextTargetComponent>> ValidTargetsArray;
@@ -68,11 +71,6 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	FRotator DefaultRotator;
 
-	FHitResult LineTraceHitResult;
-	FCollisionResponseParams LineTraceCollisionResponseParams;
-
-	float SelectTargetRemainingWaitTime;
-
 	UPROPERTY()
 	TArray<AActor*> TraceIgnoredActors;
 
@@ -85,7 +83,8 @@ protected:
 	UPROPERTY(BlueprintReadWrite)
 	TWeakObjectPtr<class UContextTargetComponent> MyContextTargetComponent;
 
-	FQuaternionSpringState RotationSpringState = FQuaternionSpringState();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	bool bProjectilesDrawDebug = false;
 
 protected:
 
@@ -98,5 +97,23 @@ protected:
 	float CalculateTargetScore(const TWeakObjectPtr<UContextTargetComponent>& Target);
 
 	void UpdateRotation(float DeltaTime);
+
+	void UpdateShootLogic(float DeltaTime);
+
+	FVector GetShootDirection(const FVector& ShootLocation, const int& IterationThisTick);
+
+private:
+
+	bool bFiredPreviousTick = false;
+
+	bool bRotationValidToShoot = false;
+
+	double TimePreviouslyFired;
+
+	float SelectTargetRemainingWaitTime;
+
+	int32 NumPendingShots = 0;
+
+	FQuaternionSpringState RotationSpringState = FQuaternionSpringState();
 
 };

@@ -42,6 +42,8 @@ void ATurret::Tick(float DeltaTime)
 	}
 
 	UpdateRotation(DeltaTime);
+
+	UpdateShootLogic(DeltaTime);
 }
 
 void ATurret::SelectTarget()
@@ -201,4 +203,120 @@ void ATurret::UpdateRotation(float DeltaTime)
 		DeltaTime);
 
 	RotationRootComponent->SetWorldRotation(NewQuaternion);
+
+	if (CurrentTarget.IsValid())
+	{
+		float DotToTargetDirection = FVector::DotProduct(RotationRootComponent->GetForwardVector(), TargetQuaternion.Vector());
+		bRotationValidToShoot = (DotToTargetDirection >= ValidShootDirectionDot);
+	}
+	else
+		bRotationValidToShoot = false;
+}
+
+void ATurret::UpdateShootLogic(float DeltaTime)
+{
+	if (bRotationValidToShoot == false || CurrentTarget.IsValid() == false)
+		return;
+
+	const double TimeNow = UGameplayStatics::GetTimeSeconds(this);
+	const double WaitTimeBetweenShots = 1.0 / WeaponAsset->UseRatePerSecond;
+	double TimeElapsedPreviouslyFired = TimeNow - TimePreviouslyFired;
+
+	if (WeaponAsset->bBurstFire)
+	{
+		if (NumPendingShots > 0)
+		{
+			if (TimeElapsedPreviouslyFired < WaitTimeBetweenShots)
+				return;
+		}
+		else
+		{
+			if (TimeElapsedPreviouslyFired < WeaponAsset->BurstCooldownTime)
+				return;
+
+			NumPendingShots = WeaponAsset->BurstNumShots;
+
+			if (NumPendingShots <= 0)
+				NumPendingShots = 1;
+
+			TimeElapsedPreviouslyFired = WaitTimeBetweenShots;
+		}
+	}
+	else
+	{
+		if (TimeElapsedPreviouslyFired < WaitTimeBetweenShots)
+			return;
+
+		NumPendingShots = 1;
+	}
+
+	bFiredPreviousTick = true;
+	TimePreviouslyFired = TimeNow;
+
+	UWorld* World = GetWorld();
+
+	if (World == nullptr)
+	{
+		NumPendingShots = 0;
+		return;
+	}
+
+	UProjectileSubsystem* ProjectileSubsystem = World->GetSubsystem<UProjectileSubsystem>();
+
+	if (ProjectileSubsystem == nullptr)
+	{
+		NumPendingShots = 0;
+		return;
+	}
+
+	float RemainingTime = TimeElapsedPreviouslyFired;
+	int32 NumSpawned = 0;
+	FVector ProjectileSpawnLocation = (ProjectileSpawnTransformComponent.IsValid() ? ProjectileSpawnTransformComponent->GetComponentLocation() : GetActorLocation());
+
+	while (RemainingTime >= WaitTimeBetweenShots)
+	{
+		RemainingTime -= WaitTimeBetweenShots;
+
+		if (NumPendingShots <= 0)
+		{
+			NumPendingShots = 0;
+			break;
+		}
+
+		FVector InstanceSpawnLocation = ProjectileSpawnLocation;
+		FVector ShootDirection = GetShootDirection(ProjectileSpawnLocation, NumSpawned);
+
+		if (NumSpawned > 0)
+			InstanceSpawnLocation += (NumSpawned * WaitTimeBetweenShots) * WeaponAsset->ProjectileAsset->InitialSpeed * ShootDirection;
+
+		ProjectileSubsystem->SpawnProjectile(
+			this,
+			WeaponAsset->ProjectileAsset,
+			InstanceSpawnLocation,
+			ShootDirection,
+			CurrentTarget.Get(),
+			bProjectilesDrawDebug);
+
+		NumPendingShots--;
+		NumSpawned++;
+	}
+}
+
+FVector ATurret::GetShootDirection(const FVector& ShootLocation, const int& IterationThisTick)
+{
+	FVector ResultDirection = (ProjectileSpawnTransformComponent.IsValid() ? 
+		ProjectileSpawnTransformComponent->GetForwardVector() : 
+		RotationRootComponent->GetForwardVector());
+
+	FTransform SpawnTransform = FTransform(ResultDirection.ToOrientationQuat(), ShootLocation);
+	ResultDirection = ResultDirection.RotateAngleAxis(WeaponAsset->FireDirectionRotationOffset.Pitch, SpawnTransform.GetUnitAxis(EAxis::Z));
+	ResultDirection = ResultDirection.RotateAngleAxis(WeaponAsset->FireDirectionRotationOffset.Yaw, SpawnTransform.GetUnitAxis(EAxis::X));
+	ResultDirection = ResultDirection.RotateAngleAxis(WeaponAsset->FireDirectionRotationOffset.Roll, SpawnTransform.GetUnitAxis(EAxis::Y));
+
+	float DistanceToTarget = (CurrentTarget->GetComponentLocation() - GetActorLocation()).Length();
+	float Accuracy = AccuracyOverDistanceCurve.GetRichCurve()->Eval(DistanceToTarget / MaxTargetingDistance);
+
+	WeaponAsset->InaccuracyNoise.ApplyToDirection(ResultDirection, Accuracy, GetGameTimeSinceCreation() + IterationThisTick);
+
+	return ResultDirection;
 }

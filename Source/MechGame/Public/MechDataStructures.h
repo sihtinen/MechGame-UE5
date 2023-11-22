@@ -96,6 +96,8 @@ struct FProjectileState
 
 public:
 
+    bool bDrawDebug;
+
     UPROPERTY(BlueprintReadOnly)
     float AliveTime;
 
