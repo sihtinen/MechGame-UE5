@@ -191,7 +191,15 @@ void ATurret::UpdateRotation(float DeltaTime)
 			InterceptDirection);
 
 		if (bInterceptDirectionFound)
+		{
+			FVector ToTarget = CurrentTarget->GetComponentLocation() - SpawnLocation;
+
+			float PredictionAmount = PredictionOverDistanceCurve.GetRichCurve()->Eval(ToTarget.Length() / MaxTargetingDistance);
+
+			InterceptDirection = FMath::Lerp(ToTarget.GetSafeNormal(), InterceptDirection, PredictionAmount).GetSafeNormal();
+
 			TargetQuaternion = InterceptDirection.ToOrientationQuat();
+		}
 	}
 
 	FQuat NewQuaternion = UKismetMathLibrary::QuaternionSpringInterp(

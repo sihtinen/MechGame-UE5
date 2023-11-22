@@ -36,6 +36,9 @@ protected:
 	FRuntimeFloatCurve AccuracyOverDistanceCurve;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	FRuntimeFloatCurve PredictionOverDistanceCurve;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float ValidShootDirectionDot = 0.7f;
 
 	UPROPERTY()
