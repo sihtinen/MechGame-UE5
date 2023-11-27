@@ -14,6 +14,7 @@
 #include "Engine/AssetManager.h"
 #include "MechWeaponComponent.h"
 #include "EquipmentWidgetSourceInterface.h"
+#include "HealthComponent.h"
 
 AMech::AMech()
 {
@@ -30,6 +31,8 @@ void AMech::BeginPlay()
 	CollisionCapsule->SetLinearDamping(0.0f);
 
 	TargetingComponent = Cast<UMechTargetingComponent>(GetComponentByClass(UMechTargetingComponent::StaticClass()));
+
+	HealthComponent = Cast<UHealthComponent>(GetComponentByClass(UHealthComponent::StaticClass()));
 
 	if (LoadoutAsset == false)
 		return;

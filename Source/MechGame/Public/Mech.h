@@ -20,6 +20,7 @@ class UAnimBlueprint;
 class UMechEquipmentComponentRTBase;
 class UMechWeaponComponent;
 class UMechTargetingComponent;
+class UHealthComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnInputSlotStateUpdated, const EEquipmentSlotType&, SlotType, bool, IsPressed);
 
@@ -44,6 +45,9 @@ public:
 
 	UPROPERTY()
 	TWeakObjectPtr<UMechTargetingComponent> TargetingComponent;
+
+	UPROPERTY()
+	TWeakObjectPtr<UHealthComponent> HealthComponent;
 
 	UPROPERTY(BlueprintReadWrite, Category = "Mech Runtime Properties")
 	bool bBoostInputActive;

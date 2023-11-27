@@ -11,6 +11,7 @@
 #include "ContextTargetComponent.h"
 #include "ActorPool.h"
 #include "DrawDebugHelpers.h"
+#include "Engine/DamageEvents.h"
 
 void UProjectileSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
@@ -50,16 +51,16 @@ void UProjectileSubsystem::Tick(float DeltaTime)
 }
 
 void UProjectileSubsystem::SpawnProjectile(
-	AActor* SourceActor, 
+	APawn* SourcePawn,
 	UProjectileAsset* ProjectileAsset, 
 	const FVector& Location, 
 	const FVector& Direction, 
 	UContextTargetComponent* TargetComponent,
 	bool DrawDebug)
 {
-	if (SourceActor == nullptr)
+	if (SourcePawn == nullptr)
 	{
-		UE_LOGFMT(LogTemp, Error, "UProjectileSubsystem::SpawnProjectile(): SourceActor parameter is null pointer - exiting early");
+		UE_LOGFMT(LogTemp, Error, "UProjectileSubsystem::SpawnProjectile(): SourcePawn parameter is null pointer - exiting early");
 		return;
 	}
 
@@ -69,11 +70,11 @@ void UProjectileSubsystem::SpawnProjectile(
 		return;
 	}
 
-	FProjectileState NewProjectile = FProjectileState(SourceActor, ProjectileAsset);
+	FProjectileState NewProjectile = FProjectileState(SourcePawn, ProjectileAsset);
 	NewProjectile.bDrawDebug = DrawDebug;
 	NewProjectile.Location = Location;
 	NewProjectile.ForwardDirection = Direction;
-	NewProjectile.Velocity = SourceActor->GetVelocity() + ProjectileAsset->InitialSpeed * Direction;
+	NewProjectile.Velocity = SourcePawn->GetVelocity() + ProjectileAsset->InitialSpeed * Direction;
 	NewProjectile.TargetComponent = TargetComponent;
 
 	InitializeProjectileVisualActor(ProjectileAsset, NewProjectile);
@@ -222,7 +223,7 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 	const bool IgnoreSelf = true;
 	const EDrawDebugTrace::Type DrawDebugType = (Projectile.bDrawDebug ? EDrawDebugTrace::ForOneFrame : EDrawDebugTrace::None);
 
-	TraceIgnoredActors[0] = Projectile.OwnerActor.Get();
+	TraceIgnoredActors[0] = Projectile.OwnerPawn.Get();
 
 	const bool bTraceHitFound = UKismetSystemLibrary::SphereTraceSingle(
 		this,
@@ -240,6 +241,22 @@ bool UProjectileSubsystem::UpdateProjectile(FProjectileState& Projectile, const 
 
 	if (bTraceHitFound)
 	{
+		AActor* HitActor = TraceHitResult.GetActor();
+		if (HitActor && HitActor->CanBeDamaged())
+		{
+			FPointDamageEvent DamageEvent = FPointDamageEvent(
+				Projectile.ProjectileAsset->Damage,
+				TraceHitResult,
+				Projectile.Velocity.GetSafeNormal(),
+				Projectile.ProjectileAsset->DamageType);
+
+			HitActor->TakeDamage(
+				Projectile.ProjectileAsset->Damage,
+				DamageEvent,
+				Projectile.GetOwnerController(),
+				Projectile.OwnerPawn.Get());
+		}
+
 		if (Projectile.VisualActor.IsValid())
 		{
 			FRotator Rotation = UKismetMathLibrary::FindLookAtRotation(FVector::ZeroVector, Projectile.ForwardDirection);

@@ -111,7 +111,7 @@ public:
     FVector Velocity;
 
     UPROPERTY(BlueprintReadOnly)
-    TWeakObjectPtr<AActor> OwnerActor;
+    TWeakObjectPtr<APawn> OwnerPawn;
 
     UPROPERTY(BlueprintReadOnly)
     TWeakObjectPtr<class APooledActor> VisualActor;
@@ -125,7 +125,11 @@ public:
 public:
 
     FProjectileState();
-    FProjectileState(AActor* OwnerActor, UProjectileAsset* Asset);
+    FProjectileState(APawn* OwnerPawn, UProjectileAsset* Asset);
+
+    class AController* GetOwnerController();
+
+    class UDamageType* GetDamageType();
 
 };
 

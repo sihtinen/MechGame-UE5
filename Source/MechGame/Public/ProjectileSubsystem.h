@@ -25,11 +25,11 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SpawnProjectile(
-		AActor* SourceActor, 
+		APawn* SourcePawn, 
 		UProjectileAsset* ProjectileAsset, 
 		const FVector& Location, 
 		const FVector& Direction, 
-		class UContextTargetComponent* TargetComponent = nullptr,
+		class UContextTargetComponent* TargetComponent = nullptr, 
 		bool DrawDebug = false);
 
 	UFUNCTION(BlueprintCallable)

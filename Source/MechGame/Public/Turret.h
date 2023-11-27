@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 #include "MechDataStructures.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Turret.generated.h"
@@ -11,7 +11,7 @@
 class UContextTargetComponent;
 
 UCLASS()
-class MECHGAME_API ATurret : public AActor
+class MECHGAME_API ATurret : public APawn
 {
 	GENERATED_BODY()
 	

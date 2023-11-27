@@ -17,6 +17,9 @@ public:
 	int32 Damage;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<class UDamageType> DamageType;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float InitialSpeed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)

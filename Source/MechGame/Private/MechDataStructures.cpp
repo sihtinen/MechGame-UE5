@@ -34,12 +34,27 @@ FProjectileState::FProjectileState()
 	AliveTime = 0.0f;
 }
 
-FProjectileState::FProjectileState(AActor* Owner, UProjectileAsset* Asset)
+FProjectileState::FProjectileState(APawn* Owner, UProjectileAsset* Asset)
 {
-	OwnerActor = Owner;
+	OwnerPawn = Owner;
 	ProjectileAsset = Asset;
 
 	AliveTime = 0.0f;
+}
+
+AController* FProjectileState::GetOwnerController()
+{
+	if (OwnerPawn.IsValid() == false)
+		return nullptr;
+
+	return OwnerPawn->GetController();
+}
+
+UDamageType* FProjectileState::GetDamageType()
+{
+
+
+	return nullptr;
 }
 
 void FWeaponInaccuracyNoise::ApplyToDirection(FVector& Direction, const float Accuracy, const float GameTime)
